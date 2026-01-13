@@ -1,639 +1,359 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mota TV • Dashboards</title>
-  <meta name="color-scheme" content="dark" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mota TV - Dashboards</title>
   <style>
-    :root{
-      --bg1:#070a12;
-      --bg2:#0b1020;
-      --card: rgba(15,23,42,.78);
-      --stroke: rgba(255,255,255,.10);
-      --muted: rgba(148,163,184,.95);
-      --text: #e8eaed;
-      --good:#22c55e;
-      --warn:#f59e0b;
-      --bad:#ef4444;
-      --a:#3b82f6;
-      --b:#8b5cf6;
-      --c:#ec4899;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
-    #app{position:fixed;inset:0;display:flex;flex-direction:column}
-
-    header{
-      padding:16px 18px 12px;
-      background:linear-gradient(135deg, rgba(15,23,42,.92), rgba(30,41,59,.86));
-      border-bottom:1px solid var(--stroke);
-      box-shadow:0 8px 30px rgba(0,0,0,.35);
-      display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+    
+    body {
+      background: #0a0e19;
+      color: #e8eaed;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
     }
-    .brand{display:flex;flex-direction:column;gap:4px;min-width:0}
-    .brand .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
-    .brand .title{font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:78vw}
-    .meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;white-space:nowrap}
-    .status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
-    .dot{width:9px;height:9px;border-radius:999px;background:var(--good);box-shadow:0 0 0 4px rgba(34,197,94,.12)}
-    .status.partial .dot{background:var(--warn);box-shadow:0 0 0 4px rgba(245,158,11,.14)}
-    .status.offline .dot{background:var(--bad);box-shadow:0 0 0 4px rgba(239,68,68,.14)}
-    .badge{
-      font-size:12px;color:#cbd5e1;
-      background:rgba(2,6,23,.55);
-      border:1px solid var(--stroke);
-      padding:6px 10px;border-radius:999px;
+    
+    #header {
+      background: #1e293b;
+      padding: 20px;
+      border-bottom: 2px solid #3b82f6;
     }
-
-    main{position:relative;flex:1;min-height:0}
-    #chart{position:absolute;inset:0}
-
-    .progressWrap{height:3px;background:rgba(255,255,255,.06);overflow:hidden}
-    .progress{height:100%;width:100%;background:linear-gradient(90deg,var(--a),var(--b),var(--c));transform-origin:left;transform:scaleX(0)}
-
-    .nav{
-      position:fixed;left:0;right:0;bottom:14px;display:flex;justify-content:space-between;pointer-events:none;padding:0 14px;
+    
+    #title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 5px;
     }
-    .btn{
-      pointer-events:auto;
-      width:52px;height:52px;border-radius:999px;
-      border:1px solid var(--stroke);
-      background:rgba(2,6,23,.55);
-      backdrop-filter:blur(8px);
-      color:var(--text);
-      display:grid;place-items:center;
-      font-size:18px;font-weight:900;
-      box-shadow:0 10px 22px rgba(0,0,0,.35);
-      user-select:none;cursor:pointer;
+    
+    #status {
+      font-size: 14px;
+      color: #94a3b8;
     }
-    .btn:active{transform:scale(.98)}
-
-    .overlay{
-      position:absolute;inset:0;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(2,6,23,.70);
-      backdrop-filter:blur(8px);
-      transition:opacity .2s;
+    
+    #chart {
+      width: 100%;
+      height: calc(100vh - 140px);
+      padding: 20px;
     }
-    .overlay.hidden{opacity:0;pointer-events:none}
-    .card{
-      width:min(680px,92vw);
-      background:var(--card);
-      border:1px solid var(--stroke);
-      border-radius:16px;
-      padding:18px 18px;
-      box-shadow:0 18px 50px rgba(0,0,0,.35);
-      text-align:center;
+    
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 100;
     }
-    .spin{
-      width:44px;height:44px;border-radius:999px;margin:0 auto 12px;
-      border:4px solid rgba(255,255,255,.12);
-      border-top-color:var(--a);
-      animation:sp 0.8s linear infinite;
+    
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
     }
-    @keyframes sp{to{transform:rotate(360deg)}}
-    .card h2{font-size:15px;font-weight:900;color:#e2e8f0;margin-bottom:6px}
-    .card p{font-size:12px;line-height:1.5;color:var(--muted)}
-    .hint{
-      margin-top:10px;
-      font-size:11px;
-      color:rgba(203,213,225,.85);
-      opacity:.9
+    
+    .btn:active {
+      background: #2563eb;
     }
-
-    @media (max-width:768px){
-      .brand .title{font-size:17px;max-width:66vw}
-      .btn{width:48px;height:48px}
+    
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9);
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 200;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #333;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .hidden {
+      display: none;
     }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 </head>
-
 <body>
-<div id="app">
-  <header>
-    <div class="brand">
-      <div class="kicker">Mota TV</div>
-      <div class="title" id="screenTitle">Carregando…</div>
-    </div>
-    <div class="meta">
-      <div class="status partial" id="status"><span class="dot"></span><span id="statusText">Conectando…</span></div>
-      <div class="badge" id="badge">0/0</div>
-    </div>
-  </header>
-
-  <main>
-    <div id="chart"></div>
-
-    <div class="overlay" id="overlay">
-      <div class="card">
-        <div class="spin"></div>
-        <h2 id="ovTitle">Carregando dashboards…</h2>
-        <p id="ovSub">Buscando dados nas planilhas</p>
-        <div class="hint" id="ovHint"></div>
-      </div>
-    </div>
-  </main>
-
-  <div class="progressWrap"><div class="progress" id="progress"></div></div>
-
-  <div class="nav">
-    <div class="btn" id="prev">◀</div>
-    <div class="btn" id="next">▶</div>
+  <div id="header">
+    <div id="title">Carregando...</div>
+    <div id="status">Inicializando sistema</div>
   </div>
-</div>
+  
+  <canvas id="chart"></canvas>
+  
+  <div id="controls">
+    <button class="btn" onclick="prevScreen()">◀ Anterior</button>
+    <button class="btn" onclick="nextScreen()">Próximo ▶</button>
+  </div>
+  
+  <div id="loading">
+    <div class="spinner"></div>
+    <div style="font-size: 18px; color: #fff;">Carregando dados...</div>
+  </div>
 
-<script>
-/* =========================================================
-   CONFIG
-   A API retorna:
-   {
-     ok:true,
-     headers:[...],
-     rows:[[ "13/01/2026", "ESP TEST", "00:00:02", ... "49,54%", ...], ...]
-   }
-========================================================= */
-const CONFIG = {
-  sources: [
-    { name: "Fonte 1", apiUrl: "https://script.google.com/macros/s/AKfycbzbEO-JpjRMjJSf-xOlIU36EAKITXep3lZa5wzX_gb2DBauRdu8vdUpIknuQk-mF2SM/exec" },
-    { name: "Fonte 2", apiUrl: "https://script.google.com/macros/s/AKfycbzbEO-JpjRMjJSf-xOlIU36EAKITXep3lZa5wzX_gb2DBSFJNDauRdu8vd/exec" }
-  ],
-  token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc", // ajuste
-  lastDays: 20,           // quantos dias mostrar no gráfico
-  slideIntervalMs: 35000, // tempo por slide
-  refreshMs: 300000,      // recarregar dados
-  fetchTimeoutMs: 9000,
-  animation: false,
-  showSymbols: true,
-  showLabels: false,
-  progressTickMs: 250
-};
+  <script>
+    // ========== CONFIGURAÇÃO ==========
+    const CONFIG = {
+      apiUrl: "https://script.google.com/macros/s/AKfycbzbEO-JpjRMjJSf-xOlIU36EAKITXep3lZa5wzX_gb2DBauRdu8vdUpIknuQk-mF2SM/exec",
+      token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
+      slideInterval: 35000,
+      autoRefresh: 300000
+    };
 
-/* =========================================================
-   DOM
-========================================================= */
-const $ = (id) => document.getElementById(id);
-const DOM = {
-  title: $("screenTitle"),
-  badge: $("badge"),
-  status: $("status"),
-  statusText: $("statusText"),
-  overlay: $("overlay"),
-  ovTitle: $("ovTitle"),
-  ovSub: $("ovSub"),
-  ovHint: $("ovHint"),
-  progress: $("progress"),
-  chartEl: $("chart"),
-  chart: null
-};
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let canvas = document.getElementById('chart');
+    let ctx = canvas.getContext('2d');
+    let screens = [];
+    let currentIndex = 0;
+    let allData = [];
 
-/* =========================================================
-   UI helpers
-========================================================= */
-function showOverlay(title, sub, hint=""){
-  DOM.ovTitle.textContent = title;
-  DOM.ovSub.textContent = sub || "";
-  DOM.ovHint.textContent = hint || "";
-  DOM.overlay.classList.remove("hidden");
-}
-function hideOverlay(){ DOM.overlay.classList.add("hidden"); }
+    // ========== FUNÇÕES DE DESENHO ==========
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
 
-function setStatus(kind, text){
-  DOM.status.classList.remove("partial","offline");
-  if(kind === "partial") DOM.status.classList.add("partial");
-  if(kind === "offline") DOM.status.classList.add("offline");
-  DOM.statusText.textContent = text || "";
-}
+    function drawBarChart(labels, values, title, color, suffix = '') {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const padding = 60;
+      const chartWidth = canvas.width - padding * 2;
+      const chartHeight = canvas.height - padding * 2;
+      const barWidth = chartWidth / labels.length - 10;
+      
+      const maxValue = Math.max(...values.filter(v => v !== null)) || 100;
+      
+      // Título
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 30);
+      
+      // Barras
+      labels.forEach((label, i) => {
+        const value = values[i];
+        if (value === null) return;
+        
+        const x = padding + i * (barWidth + 10);
+        const barHeight = (value / maxValue) * chartHeight;
+        const y = canvas.height - padding - barHeight;
+        
+        // Desenha barra
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, barWidth, barHeight);
+        
+        // Valor em cima
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(value.toFixed(1) + suffix, x + barWidth / 2, y - 5);
+        
+        // Label embaixo
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '14px Arial';
+        ctx.fillText(label, x + barWidth / 2, canvas.height - padding + 20);
+      });
+    }
 
-/* =========================================================
-   Parsing helpers (pt-BR)
-========================================================= */
-function normKey(s){
-  return String(s||"").trim().toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim();
-}
-function idxOf(headers, name){
-  const h = headers.map(normKey);
-  return h.indexOf(normKey(name));
-}
-function parsePtNumber(v){
-  if(v==null) return null;
-  let s = String(v).trim();
-  if(!s) return null;
-  s = s.replace(/\./g,"").replace(",",".");
-  const n = Number(s);
-  return Number.isFinite(n) ? n : null;
-}
-function parsePercent(v){
-  if(v==null) return null;
-  let s = String(v).trim();
-  if(!s) return null;
-  s = s.replace("%","").trim();
-  return parsePtNumber(s); // 0..100
-}
-function parseHMS(v){
-  if(v==null) return null;
-  const s = String(v).trim();
-  const m = s.match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
-  if(!m) return null;
-  return (+m[1])*3600 + (+m[2])*60 + (+m[3]);
-}
-function labelFromDateBR(d){
-  const s = String(d||"").trim();
-  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  return m ? `${m[1]}/${m[2]}` : s;
-}
+    function drawLineChart(labels, values, title, color, suffix = '') {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const padding = 60;
+      const chartWidth = canvas.width - padding * 2;
+      const chartHeight = canvas.height - padding * 2;
+      
+      const maxValue = Math.max(...values.filter(v => v !== null)) || 100;
+      const minValue = Math.min(...values.filter(v => v !== null)) || 0;
+      const range = maxValue - minValue || 1;
+      
+      // Título
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 30);
+      
+      // Linha
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      
+      let firstPoint = true;
+      labels.forEach((label, i) => {
+        const value = values[i];
+        if (value === null) return;
+        
+        const x = padding + (i / (labels.length - 1)) * chartWidth;
+        const y = canvas.height - padding - ((value - minValue) / range) * chartHeight;
+        
+        if (firstPoint) {
+          ctx.moveTo(x, y);
+          firstPoint = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+        
+        // Ponto
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Valor
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(value.toFixed(1) + suffix, x, y - 15);
+        
+        // Label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px Arial';
+        ctx.fillText(label, x, canvas.height - padding + 20);
+      });
+      
+      ctx.stroke();
+    }
 
-/* =========================================================
-   Fetch
-========================================================= */
-async function fetchJson(url){
-  const controller = new AbortController();
-  const to = setTimeout(() => controller.abort(), CONFIG.fetchTimeoutMs);
+    // ========== PROCESSAMENTO DE DADOS ==========
+    function parseData(json) {
+      const headers = json.headers || [];
+      const rows = json.rows || [];
+      
+      const result = [];
+      
+      rows.forEach(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = row[i];
+        });
+        
+        result.push({
+          label: obj.data ? obj.data.substring(0, 5) : '',
+          util: parseFloat(String(obj['Utilização de Maquina'] || '0').replace('%', '').replace(',', '.')) || null,
+          pecas: parseFloat(String(obj['Peças Fabric.'] || '0').replace('.', '').replace(',', '.')) || null
+        });
+      });
+      
+      return result;
+    }
 
-  try{
-    const u = new URL(url);
-    if(CONFIG.token) u.searchParams.set("token", CONFIG.token);
-    u.searchParams.set("_", String(Date.now())); // cache bust
+    function createScreens(data) {
+      const labels = data.map(d => d.label);
+      const utilData = data.map(d => d.util);
+      const pecasData = data.map(d => d.pecas);
+      
+      return [
+        {
+          title: 'Utilização de Máquina',
+          draw: () => drawLineChart(labels, utilData, 'Utilização de Máquina (%)', '#3b82f6', '%')
+        },
+        {
+          title: 'Produção Diária',
+          draw: () => drawBarChart(labels, pecasData, 'Peças Fabricadas', '#22c55e', '')
+        }
+      ];
+    }
 
-    const resp = await fetch(u.toString(), {
-      cache: "no-store",
-      signal: controller.signal,
-      headers: { "Accept": "application/json,text/plain,*/*" }
+    // ========== NAVEGAÇÃO ==========
+    function showScreen(index) {
+      if (screens.length === 0) return;
+      
+      currentIndex = index;
+      const screen = screens[currentIndex];
+      
+      document.getElementById('title').textContent = screen.title;
+      document.getElementById('status').textContent = `Tela ${currentIndex + 1} de ${screens.length}`;
+      
+      resizeCanvas();
+      screen.draw();
+    }
+
+    function nextScreen() {
+      currentIndex = (currentIndex + 1) % screens.length;
+      showScreen(currentIndex);
+    }
+
+    function prevScreen() {
+      currentIndex = (currentIndex - 1 + screens.length) % screens.length;
+      showScreen(currentIndex);
+    }
+
+    // ========== CARREGAMENTO ==========
+    async function loadData() {
+      try {
+        const url = `${CONFIG.apiUrl}?token=${CONFIG.token}&_=${Date.now()}`;
+        const response = await fetch(url);
+        const json = await response.json();
+        
+        allData = parseData(json);
+        screens = createScreens(allData);
+        
+        document.getElementById('loading').classList.add('hidden');
+        showScreen(0);
+        
+        // Auto-avançar
+        setInterval(nextScreen, CONFIG.slideInterval);
+        
+        // Auto-refresh
+        setInterval(loadData, CONFIG.autoRefresh);
+        
+      } catch (error) {
+        document.getElementById('loading').innerHTML = 
+          '<div style="color:#ef4444; font-size:18px;">Erro ao carregar dados<br><small>' + 
+          error.message + '</small></div>';
+      }
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    window.addEventListener('resize', () => {
+      if (screens.length > 0) {
+        showScreen(currentIndex);
+      }
     });
-    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
 
-    if(json && json.ok === false) throw new Error(json.error || "API error");
-    if(!json || !Array.isArray(json.headers) || !Array.isArray(json.rows)) {
-      throw new Error("Formato inválido: precisa headers[] e rows[][]");
-    }
-    return json;
-  } finally {
-    clearTimeout(to);
-  }
-}
-
-/* =========================================================
-   Transform: payload -> séries numéricas p/ gráficos
-========================================================= */
-function transform(payload){
-  const headers = payload.headers;
-  const rows = payload.rows;
-
-  const cDate = idxOf(headers, "data");
-  const cUtil = idxOf(headers, "utilização de Maquina");
-  const cEf5  = idxOf(headers, "Eficiencia -5 dias média");
-  const cPcs  = idxOf(headers, "Peças Fabric.");
-  const cTc   = idxOf(headers, "TC MEDIO");
-  const cFunc = idxOf(headers, "Funcionando");
-  const cPar  = idxOf(headers, "Parado");
-
-  if(cDate < 0) throw new Error("Coluna 'data' não encontrada");
-
-  const out = [];
-  for(const r of rows){
-    const dateBr = r[cDate];
-    out.push({
-      label: labelFromDateBR(dateBr),
-      util:  cUtil >= 0 ? parsePercent(r[cUtil]) : null,
-      ef5:   cEf5  >= 0 ? parsePercent(r[cEf5])  : null,
-      pecas: cPcs  >= 0 ? parsePtNumber(r[cPcs]) : null,
-      tc_s:  cTc   >= 0 ? parseHMS(r[cTc])       : null,
-      func_h: cFunc>= 0 ? (parseHMS(r[cFunc]) ?? null) : null,
-      par_h:  cPar >= 0 ? (parseHMS(r[cPar])  ?? null) : null
+    // Suporte a toque (swipe)
+    let touchStartX = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
     });
-  }
-
-  // a API costuma vir mais recente -> mais antigo; para o eixo ficar natural:
-  const sliced = out.slice(0, CONFIG.lastDays).reverse();
-
-  for(const x of sliced){
-    if(x.func_h!=null) x.func_h = Math.round((x.func_h/3600)*100)/100;
-    else x.func_h = null;
-
-    if(x.par_h!=null) x.par_h = Math.round((x.par_h/3600)*100)/100;
-    else x.par_h = null;
-
-    if(x.util!=null) x.util = Math.round(x.util*100)/100;
-    if(x.ef5!=null)  x.ef5  = Math.round(x.ef5*100)/100;
-  }
-  return sliced;
-}
-
-/* =========================================================
-   Chart options
-========================================================= */
-function baseOption(labels){
-  return {
-    backgroundColor:"transparent",
-    animation: CONFIG.animation,
-    textStyle:{color:"#e8eaed",fontFamily:"inherit"},
-    grid:{left:62,right:22,top:54,bottom:50},
-    tooltip:{
-      trigger:"axis",
-      backgroundColor:"rgba(15,23,42,0.95)",
-      borderColor:"rgba(59,130,246,0.30)",
-      borderWidth:1,
-      textStyle:{color:"#fff"}
-    },
-    xAxis:{
-      type:"category",
-      data: labels,
-      axisLine:{lineStyle:{color:"rgba(255,255,255,0.10)"}},
-      axisTick:{show:false},
-      axisLabel:{color:"rgba(148,163,184,0.95)",fontSize:11}
-    },
-    yAxis:{
-      type:"value",
-      axisLine:{show:false},
-      axisTick:{show:false},
-      axisLabel:{color:"rgba(148,163,184,0.95)",fontSize:11},
-      splitLine:{lineStyle:{color:"rgba(255,255,255,0.05)"}}
-    }
-  };
-}
-function fmtInt(n){ return (n==null || n==="") ? "" : Math.round(Number(n)).toLocaleString("pt-BR"); }
-function fmt1(n){ return (n==null || n==="") ? "" : (Math.round(Number(n)*10)/10).toLocaleString("pt-BR"); }
-function fmt2(n){ return (n==null || n==="") ? "" : (Math.round(Number(n)*100)/100).toLocaleString("pt-BR"); }
-
-function screensForSource(sourceName, series){
-  const labels = series.map(x => x.label);
-  return [
-    {
-      title: `${sourceName} • Utilização`,
-      option: () => {
-        const opt = baseOption(labels);
-        opt.yAxis.min = 0; opt.yAxis.max = 100;
-        opt.series = [{
-          name:"Utilização (%)",
-          type:"line",
-          showSymbol: CONFIG.showSymbols,
-          symbol:"circle",
-          symbolSize:4,
-          connectNulls:true,
-          lineStyle:{width:2,color:"#3b82f6"},
-          itemStyle:{color:"#3b82f6"},
-          label:{ show: CONFIG.showLabels, formatter:p=>p.value==null?"":fmt2(p.value)+"%" },
-          data: series.map(x => x.util ?? null)
-        }];
-        return opt;
+    
+    canvas.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) nextScreen();
+        else prevScreen();
       }
-    },
-    {
-      title: `${sourceName} • Eficiência (5 dias)`,
-      option: () => {
-        const opt = baseOption(labels);
-        opt.yAxis.min = 0; opt.yAxis.max = 100;
-        opt.series = [{
-          name:"Eficiência (%)",
-          type:"line",
-          showSymbol: CONFIG.showSymbols,
-          symbol:"circle",
-          symbolSize:4,
-          connectNulls:true,
-          lineStyle:{width:2,color:"#8b5cf6"},
-          itemStyle:{color:"#8b5cf6"},
-          label:{ show: CONFIG.showLabels, formatter:p=>p.value==null?"":fmt2(p.value)+"%" },
-          data: series.map(x => x.ef5 ?? null)
-        }];
-        return opt;
-      }
-    },
-    {
-      title: `${sourceName} • Produção Diária`,
-      option: () => {
-        const opt = baseOption(labels);
-        opt.series = [{
-          name:"Peças",
-          type:"bar",
-          barWidth:"60%",
-          itemStyle:{ borderRadius:[6,6,0,0], color:"#3b82f6" },
-          label:{ show: CONFIG.showLabels, position:"top", formatter:p=>fmtInt(p.value) },
-          data: series.map(x => x.pecas ?? null)
-        }];
-        return opt;
-      }
-    },
-    {
-      title: `${sourceName} • Tempo de Ciclo Médio`,
-      option: () => {
-        const opt = baseOption(labels);
-        opt.series = [{
-          name:"TC médio (s)",
-          type:"line",
-          showSymbol: CONFIG.showSymbols,
-          symbol:"circle",
-          symbolSize:4,
-          connectNulls:true,
-          lineStyle:{width:2,color:"#ec4899"},
-          itemStyle:{color:"#ec4899"},
-          label:{ show: CONFIG.showLabels, formatter:p=>p.value==null?"":fmtInt(p.value)+"s" },
-          data: series.map(x => x.tc_s ?? null)
-        }];
-        return opt;
-      }
-    },
-    {
-      title: `${sourceName} • Parado vs Funcionando`,
-      option: () => {
-        const opt = baseOption(labels);
-        opt.legend = { top: 10, textStyle:{color:"rgba(148,163,184,0.95)",fontSize:12} };
-        opt.yAxis.min = 0;
-        opt.series = [
-          {
-            name:"Funcionando (h)",
-            type:"bar",
-            stack:"total",
-            barWidth:"60%",
-            itemStyle:{borderRadius:[6,6,0,0],color:"#22c55e"},
-            label:{ show: CONFIG.showLabels, position:"inside", formatter:p=>p.value==null?"":fmt1(p.value)+"h" },
-            data: series.map(x => x.func_h ?? null)
-          },
-          {
-            name:"Parado (h)",
-            type:"bar",
-            stack:"total",
-            itemStyle:{borderRadius:[6,6,0,0],color:"#ef4444"},
-            label:{ show: CONFIG.showLabels, position:"inside", formatter:p=>p.value==null?"":fmt1(p.value)+"h" },
-            data: series.map(x => x.par_h ?? null)
-          }
-        ];
-        return opt;
-      }
-    }
-  ];
-}
-
-/* =========================================================
-   Player
-========================================================= */
-let SCREENS = [];
-let index = 0;
-let slideStart = Date.now();
-let slideTimer = null;
-let progressTimer = null;
-let refreshTimer = null;
-
-function ensureChart(){
-  if(DOM.chart) return;
-  DOM.chart = echarts.init(DOM.chartEl, null, { renderer:"canvas" });
-  window.addEventListener("resize", () => DOM.chart && DOM.chart.resize());
-}
-function updateHeader(){
-  DOM.title.textContent = SCREENS[index]?.title || "Sem dados";
-  DOM.badge.textContent = `${SCREENS.length ? (index+1) : 0}/${SCREENS.length}`;
-}
-function render(){
-  if(!SCREENS.length) return;
-  hideOverlay();
-  updateHeader();
-  DOM.chart.setOption(SCREENS[index].option(), true);
-  slideStart = Date.now();
-}
-function next(){
-  if(!SCREENS.length) return;
-  index = (index + 1) % SCREENS.length;
-  render();
-}
-function prev(){
-  if(!SCREENS.length) return;
-  index = (index - 1 + SCREENS.length) % SCREENS.length;
-  render();
-}
-function startLoops(){
-  if(progressTimer) clearInterval(progressTimer);
-  progressTimer = setInterval(() => {
-    if(!SCREENS.length) return;
-    const p = Math.max(0, Math.min(1, (Date.now()-slideStart)/CONFIG.slideIntervalMs));
-    DOM.progress.style.transform = `scaleX(${p})`;
-  }, CONFIG.progressTickMs);
-
-  if(slideTimer) clearInterval(slideTimer);
-  slideTimer = setInterval(() => {
-    if(!SCREENS.length) return;
-    if(Date.now()-slideStart >= CONFIG.slideIntervalMs) next();
-  }, 250);
-}
-
-/* =========================================================
-   Load all sources (com cache localStorage)
-========================================================= */
-function cacheKey(i){ return `mota_tv_cache_payload_${i}`; }
-
-async function loadAll(){
-  showOverlay("Carregando dashboards…", "Buscando dados nas APIs", "");
-  setStatus("partial", "Buscando dados…");
-
-  const tasks = CONFIG.sources.map((s,i) =>
-    fetchJson(s.apiUrl).then(
-      payload => ({ ok:true, payload, i }),
-      err => ({ ok:false, err, i })
-    )
-  );
-
-  const res = await Promise.all(tasks);
-
-  let okCount = 0;
-  const seriesBySource = [];
-
-  for(const r of res){
-    if(r.ok){
-      okCount++;
-      try{ localStorage.setItem(cacheKey(r.i), JSON.stringify(r.payload)); }catch(_){}
-      seriesBySource[r.i] = transform(r.payload);
-    }else{
-      // fallback cache
-      let cached = null;
-      try{
-        const raw = localStorage.getItem(cacheKey(r.i));
-        if(raw) cached = JSON.parse(raw);
-      }catch(_){}
-      if(cached && Array.isArray(cached.headers) && Array.isArray(cached.rows)){
-        try{ seriesBySource[r.i] = transform(cached); }
-        catch(_){ seriesBySource[r.i] = []; }
-      }else{
-        seriesBySource[r.i] = [];
-      }
-    }
-  }
-
-  const when = new Date().toLocaleString("pt-BR");
-  if(okCount === CONFIG.sources.length) setStatus("good", `Ao vivo • ${when}`);
-  else if(okCount > 0) setStatus("partial", `Parcial (${okCount}/${CONFIG.sources.length}) • ${when}`);
-  else setStatus("offline", `Offline • ${when}`);
-
-  return seriesBySource;
-}
-
-async function buildAndStart(isRefresh=false){
-  ensureChart();
-
-  const seriesBySource = await loadAll();
-  const screens = [];
-
-  for(let i=0;i<CONFIG.sources.length;i++){
-    const s = CONFIG.sources[i];
-    const series = seriesBySource[i] || [];
-    if(series.length) screens.push(...screensForSource(s.name, series));
-  }
-
-  if(!screens.length){
-    showOverlay("Sem dados para exibir", "Nenhuma fonte retornou dados válidos", "Verifique token/links e se a API retorna headers[] e rows[][].");
-    DOM.title.textContent = "Sem dados";
-    DOM.badge.textContent = "0/0";
-    return;
-  }
-
-  SCREENS = screens;
-  if(index >= SCREENS.length) index = 0;
-
-  render();
-  startLoops();
-
-  if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(() => {
-    buildAndStart(true).catch(err => {
-      showOverlay("Erro ao atualizar", String(err?.message || err), "");
-      setStatus("offline", "Erro ao atualizar");
     });
-  }, CONFIG.refreshMs);
-}
 
-/* =========================================================
-   Controls
-========================================================= */
-$("next").addEventListener("click", next);
-$("prev").addEventListener("click", prev);
-
-window.addEventListener("keydown", (e) => {
-  if(e.key==="ArrowRight" || e.key===" " || e.key==="PageDown") next();
-  if(e.key==="ArrowLeft"  || e.key==="Backspace" || e.key==="PageUp") prev();
-  if(e.key.toLowerCase()==="r") buildAndStart(true).catch(()=>{});
-});
-
-let touchX = null;
-window.addEventListener("touchstart", (e)=>{ touchX = e.touches?.[0]?.clientX ?? null; }, {passive:true});
-window.addEventListener("touchend", (e)=>{
-  if(touchX==null) return;
-  const endX = e.changedTouches?.[0]?.clientX ?? null;
-  if(endX==null) return;
-  const dx = endX - touchX;
-  if(Math.abs(dx) > 40){ dx < 0 ? next() : prev(); }
-  touchX = null;
-}, {passive:true});
-
-/* =========================================================
-   Start
-========================================================= */
-buildAndStart(false).catch(err => {
-  showOverlay("Erro ao iniciar", String(err?.message || err), "Confira se o token está correto e se o Apps Script está publicado como Web App.");
-  setStatus("offline","Erro ao iniciar");
-});
-</script>
+    // Inicia
+    resizeCanvas();
+    loadData();
+  </script>
 </body>
 </html>
