@@ -155,6 +155,36 @@
     </div>
   </div>
 
+  <!-- TELA 3 -->
+  <div id="screen3" class="screen">
+    <div class="dashboard">
+      <div class="chart-container"><canvas id="chart3_1"></canvas></div>
+      <div class="chart-container"><canvas id="chart3_2"></canvas></div>
+      <div class="chart-container"><canvas id="chart3_3"></canvas></div>
+      <div class="chart-container"><canvas id="chart3_4"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TELA 4 -->
+  <div id="screen4" class="screen">
+    <div class="dashboard">
+      <div class="chart-container"><canvas id="chart4_1"></canvas></div>
+      <div class="chart-container"><canvas id="chart4_2"></canvas></div>
+      <div class="chart-container"><canvas id="chart4_3"></canvas></div>
+      <div class="chart-container"><canvas id="chart4_4"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TELA 5 -->
+  <div id="screen5" class="screen">
+    <div class="dashboard">
+      <div class="chart-container"><canvas id="chart5_1"></canvas></div>
+      <div class="chart-container"><canvas id="chart5_2"></canvas></div>
+      <div class="chart-container"><canvas id="chart5_3"></canvas></div>
+      <div class="chart-container"><canvas id="chart5_4"></canvas></div>
+    </div>
+  </div>
+
   <div id="loading">
     <div class="spinner"></div>
     <div style="font-size: 18px; color: #fff;">Carregando dados...</div>
@@ -168,14 +198,29 @@
     // ========== CONFIGURAÇÃO DAS TELAS ==========
     const SCREENS_CONFIG = {
       screen1: {
-        apiUrl: "https://script.google.com/macros/s/AKfycby_3t7BRTEItZeBDKRPF2bEJV02Mw-_ryy9TwaSkMbYQKRpynbjR1U2BLlfA95bBEU9/exec",
+        apiUrl: "https://script.google.com/macros/s/AKfycbx3YngtiUOYm1-barwXd4pIdTpm3B6k6jkr_uDalilwTpo0ngnfX1sDO-QRm5ZuI6cP/exec",
         token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
-        name: "COSTURA"
+        name: "ESP_05"
       },
       screen2: {
-        apiUrl: "https://script.google.com/macros/s/AKfycbx-oyhUhYrOOnNR0-SaVOG2gNMDOu0ZNW8BhjGsDuvjJGq28Ge3mjhEX6mY8PLygEPygg/exec",
+        apiUrl: "https://script.google.com/macros/s/AKfycbwb0Ve9n5eXUcZgh004UhbkojYmnEhCNbYIIjWjwNzHbpuscqgCEValOltQUYIOUYRK/exec",
         token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
-        name: "CORTE"
+        name: "ESP_06"
+      },
+      screen3: {
+        apiUrl: "https://script.google.com/macros/s/AKfycbzdMKLjxZ0jlQfq57DXGTR1GG8Vnk7wHWmwWNwut7p7_MaotW0cYrUHWUsAdUqGInvOyA/exec",
+        token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
+        name: "ESP_07"
+      },
+      screen4: {
+        apiUrl: "https://script.google.com/macros/s/AKfycbwJpkqZp1bFeqZPMdkBnZE1lP7rSCK82Q9R_DqVA1jRs-slaok4TLr4tffvuXETfgPR/exec",
+        token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
+        name: "ESP_09"
+      },
+      screen5: {
+        apiUrl: "https://script.google.com/macros/s/AKfycbxD-Fy5e611JmGOsIGQm3NTDogwMM0fhjwIxh13sgBIRrZ7pogO9xdsfRV6dlXCIqNp/exec",
+        token: "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc",
+        name: "ESP_10"
       }
     };
 
@@ -200,7 +245,10 @@
 
     const screensData = {
       screen1: { data: [], hasError: false, errorMsg: '', needsDraw: false },
-      screen2: { data: [], hasError: false, errorMsg: '', needsDraw: false }
+      screen2: { data: [], hasError: false, errorMsg: '', needsDraw: false },
+      screen3: { data: [], hasError: false, errorMsg: '', needsDraw: false },
+      screen4: { data: [], hasError: false, errorMsg: '', needsDraw: false },
+      screen5: { data: [], hasError: false, errorMsg: '', needsDraw: false }
     };
 
     const charts = {
@@ -223,6 +271,24 @@
         { canvas: document.getElementById('chart2_2'), ctx: null },
         { canvas: document.getElementById('chart2_3'), ctx: null },
         { canvas: document.getElementById('chart2_4'), ctx: null }
+      ],
+      screen3: [
+        { canvas: document.getElementById('chart3_1'), ctx: null },
+        { canvas: document.getElementById('chart3_2'), ctx: null },
+        { canvas: document.getElementById('chart3_3'), ctx: null },
+        { canvas: document.getElementById('chart3_4'), ctx: null }
+      ],
+      screen4: [
+        { canvas: document.getElementById('chart4_1'), ctx: null },
+        { canvas: document.getElementById('chart4_2'), ctx: null },
+        { canvas: document.getElementById('chart4_3'), ctx: null },
+        { canvas: document.getElementById('chart4_4'), ctx: null }
+      ],
+      screen5: [
+        { canvas: document.getElementById('chart5_1'), ctx: null },
+        { canvas: document.getElementById('chart5_2'), ctx: null },
+        { canvas: document.getElementById('chart5_3'), ctx: null },
+        { canvas: document.getElementById('chart5_4'), ctx: null }
       ]
     };
 
