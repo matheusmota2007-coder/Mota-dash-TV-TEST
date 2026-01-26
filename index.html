@@ -805,22 +805,49 @@
       }
     }
 
+    function normalizeHeader(value) {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function findHeader(headers, candidates) {
+      for (const header of headers) {
+        const normalized = normalizeHeader(header);
+        if (candidates.some(candidate => normalized.includes(candidate))) {
+          return header;
+        }
+      }
+      return null;
+    }
+
     function parseData(json) {
       try {
         const headers = json.headers || [];
         const rows = json.rows || [];
         const result = [];
+        const headerMap = {
+          data: findHeader(headers, ['data', 'dia']),
+          pecas: findHeader(headers, ['pecasfabric', 'pecasproduz', 'pecas']),
+          funcionando: findHeader(headers, ['funcionando', 'funcionamento']),
+          parado: findHeader(headers, ['parado', 'parada']),
+          util: findHeader(headers, ['utilizacaodemaquina', 'utilizacaomaquina', 'utilizacao'])
+        };
 
         rows.forEach((row) => {
           try {
             const obj = {};
             headers.forEach((h, i) => { obj[h] = row[i]; });
 
-            let pecasStr = String(obj['Peças Fabric.'] || '0');
+            const pecasValue = headerMap.pecas ? obj[headerMap.pecas] : '0';
+            let pecasStr = String(pecasValue || '0');
             pecasStr = pecasStr.replace(/\./g, '').replace(',', '.');
             const pecas = parseFloat(pecasStr) || 0;
 
-            const funcionando = parseHMS(obj['Funcionando']);
+            const funcionandoValue = headerMap.funcionando ? obj[headerMap.funcionando] : '';
+            const funcionando = parseHMS(funcionandoValue);
 
             let tcMedio = null;
             if (pecas > 0 && funcionando > 0 && isFinite(pecas) && isFinite(funcionando)) {
@@ -828,16 +855,20 @@
               if (!isFinite(tcMedio)) tcMedio = null;
             }
 
-            let utilStr = String(obj['utilização de Maquina'] || '0');
+            const utilValue = headerMap.util ? obj[headerMap.util] : '0';
+            let utilStr = String(utilValue || '0');
             utilStr = utilStr.replace('%', '').replace(',', '.');
             const util = parseFloat(utilStr);
 
+            const paradoValue = headerMap.parado ? obj[headerMap.parado] : '';
+            const labelValue = headerMap.data ? obj[headerMap.data] : '';
+
             result.push({
-              label: obj.data ? String(obj.data).substring(0, 5) : '',
+              label: labelValue ? String(labelValue).substring(0, 5) : '',
               util: (isFinite(util) && util >= 0) ? util : null,
               pecas: (isFinite(pecas) && pecas >= 0) ? pecas : null,
               funcionando: isFinite(funcionando) ? funcionando : 0,
-              parado: isFinite(parseHMS(obj['Parado'])) ? parseHMS(obj['Parado']) : 0,
+              parado: isFinite(parseHMS(paradoValue)) ? parseHMS(paradoValue) : 0,
               tcMedio: tcMedio
             });
           } catch (rowError) {
