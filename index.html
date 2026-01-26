@@ -97,6 +97,23 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hidden { display: none; }
+
+    #timer-bar {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(148, 163, 184, 0.2);
+      z-index: 300;
+    }
+
+    #timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #3b82f6, #22c55e);
+      transition: width 0.1s linear;
+    }
   </style>
 </head>
 
@@ -143,6 +160,10 @@
     <div style="font-size: 18px; color: #fff;">Carregando dados...</div>
   </div>
 
+  <div id="timer-bar">
+    <div id="timer-fill"></div>
+  </div>
+
   <script>
     // ========== CONFIGURAÇÃO DAS TELAS ==========
     const SCREENS_CONFIG = {
@@ -168,10 +189,12 @@
 
     const SWITCH_INTERVAL = 30000;  // 30s
     const AUTO_REFRESH    = 300000; // 5min
+    const TIMER_TICK_MS   = 100;
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let currentScreenIndex = 0;
     let currentScreen = SCREEN_SEQUENCE[currentScreenIndex];
+    let lastSwitchTime = Date.now();
 
     const screensData = {
       screen1: { data: [], hasError: false, errorMsg: '', needsDraw: false },
@@ -925,6 +948,7 @@
       const previousScreen = currentScreen;
       currentScreenIndex = (currentScreenIndex + 1) % SCREEN_SEQUENCE.length;
       currentScreen = SCREEN_SEQUENCE[currentScreenIndex];
+      lastSwitchTime = Date.now();
 
       const previousEl = document.getElementById(previousScreen);
       const currentEl = document.getElementById(currentScreen);
@@ -936,6 +960,16 @@
       requestAnimationFrame(() => {
         ensureDraw(currentScreen);
       });
+    }
+
+    function updateTimerBar() {
+      const elapsed = Date.now() - lastSwitchTime;
+      const remaining = Math.max(0, SWITCH_INTERVAL - elapsed);
+      const percentage = (remaining / SWITCH_INTERVAL) * 100;
+      const fill = document.getElementById('timer-fill');
+      if (fill) {
+        fill.style.width = `${percentage}%`;
+      }
     }
 
     function updateStatus() {
@@ -964,9 +998,11 @@
     });
 
     setInterval(switchScreen, SWITCH_INTERVAL);
+    setInterval(updateTimerBar, TIMER_TICK_MS);
     setInterval(loadAllScreens, AUTO_REFRESH);
 
     loadAllScreens();
+    updateTimerBar();
   </script>
 </body>
 </html>
