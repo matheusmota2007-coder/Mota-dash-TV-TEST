@@ -667,7 +667,7 @@
       ctx.fillText('Meta 85%', centerX, centerY + 34);
     }
 
-    function drawComparisonChart(ctx, canvas, labels, values, title, color) {
+    function drawComparisonChart(ctx, canvas, labels, values, title, color, valueFormatter = null) {
       resizeCanvas(canvas);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -697,7 +697,8 @@
         ctx.fillText(label, padding, y - 6);
 
         ctx.textAlign = 'right';
-        ctx.fillText(values[i].toFixed(0), canvas.width - padding, y + 18);
+        const formattedValue = valueFormatter ? valueFormatter(values[i]) : values[i].toFixed(0);
+        ctx.fillText(formattedValue, canvas.width - padding, y + 18);
       });
     }
 
@@ -879,7 +880,8 @@
         summaries.map(s => s.name),
         summaries.map(s => s.avgTc),
         'TC médio por setor (min/peça)',
-        '#f59e0b'
+        '#f59e0b',
+        value => value.toFixed(1)
       );
     }
 
