@@ -190,6 +190,8 @@
     const SWITCH_INTERVAL = 30000;  // 30s
     const AUTO_REFRESH    = 300000; // 5min
     const TIMER_TICK_MS   = 100;
+    const UTIL_MIN_TARGET = 65;
+    const UTIL_MAX_TARGET = 85;
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let currentScreenIndex = 0;
@@ -276,7 +278,7 @@
     }
 
     // ========== FUNÇÕES DE DESENHO ==========
-    function drawLineChart(ctx, canvas, labels, values, title, color, suffix = '') {
+    function drawLineChart(ctx, canvas, labels, values, title, color, suffix = '', thresholds = null) {
       try {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -311,6 +313,35 @@
           ctx.moveTo(padding, y);
           ctx.lineTo(canvas.width - padding, y);
           ctx.stroke();
+        }
+
+        if (thresholds) {
+          const { min, max, minColor, maxColor } = thresholds;
+          const minY = padding + 30 + chartHeight - ((min - minValue) / range) * chartHeight;
+          const maxY = padding + 30 + chartHeight - ((max - minValue) / range) * chartHeight;
+
+          ctx.strokeStyle = minColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, minY);
+          ctx.lineTo(canvas.width - padding, minY);
+          ctx.stroke();
+
+          ctx.strokeStyle = maxColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, maxY);
+          ctx.lineTo(canvas.width - padding, maxY);
+          ctx.stroke();
+
+          ctx.fillStyle = minColor;
+          ctx.font = '11px Arial';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Min ${min}${suffix}`, padding + 4, minY - 4);
+
+          ctx.fillStyle = maxColor;
+          ctx.textAlign = 'left';
+          ctx.fillText(`Max ${max}${suffix}`, padding + 4, maxY - 4);
         }
 
         ctx.strokeStyle = color;
@@ -887,7 +918,21 @@
         const tcMedioData = data.map(d => d.tcMedio);
 
         resizeCanvas(charts[screenId][0].canvas);
-        drawLineChart(charts[screenId][0].ctx, charts[screenId][0].canvas, labels, utilData, 'Utilização de Máquina', '#3b82f6', '%');
+        drawLineChart(
+          charts[screenId][0].ctx,
+          charts[screenId][0].canvas,
+          labels,
+          utilData,
+          'Utilização de Máquina',
+          '#3b82f6',
+          '%',
+          {
+            min: UTIL_MIN_TARGET,
+            max: UTIL_MAX_TARGET,
+            minColor: 'rgba(239, 68, 68, 0.45)',
+            maxColor: 'rgba(34, 197, 94, 0.45)'
+          }
+        );
 
         resizeCanvas(charts[screenId][1].canvas);
         drawBarChart(charts[screenId][1].ctx, charts[screenId][1].canvas, labels, pecasData, 'Peças Fabricadas', '#22c55e', '');
