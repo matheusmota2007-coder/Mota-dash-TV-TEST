@@ -587,12 +587,25 @@
       let startAngle = -Math.PI / 2;
       values.forEach((value, index) => {
         const slice = (value / total) * Math.PI * 2;
+        const endAngle = startAngle + slice;
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
         ctx.fillStyle = colors[index];
         ctx.fill();
-        startAngle += slice;
+
+        const midAngle = startAngle + slice / 2;
+        const labelRadius = (radius + innerRadius) / 2;
+        const labelX = centerX + Math.cos(midAngle) * labelRadius;
+        const labelY = centerY + Math.sin(midAngle) * labelRadius;
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.round(value)}h`, labelX, labelY);
+
+        startAngle = endAngle;
       });
 
       ctx.beginPath();
@@ -601,8 +614,11 @@
       ctx.fill();
 
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('100%', centerX, centerY + 6);
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText(`${Math.round(total)}h`, centerX, centerY + 4);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Arial';
+      ctx.fillText('Total', centerX, centerY + 20);
 
       const legendStartY = canvas.height - 40;
       labels.forEach((label, index) => {
