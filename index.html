@@ -50,6 +50,16 @@
       padding: 8px;
     }
 
+    .management-dashboard {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+      padding: 8px;
+    }
+
     .chart-container {
       background: #1e293b;
       border-radius: 8px;
@@ -96,8 +106,20 @@
     <div id="status">Carregando dados...</div>
   </div>
 
+  <!-- TELA GERENCIAL -->
+  <div id="screenManager" class="screen active">
+    <div class="management-dashboard">
+      <div class="chart-container"><canvas id="manager_1"></canvas></div>
+      <div class="chart-container"><canvas id="manager_2"></canvas></div>
+      <div class="chart-container"><canvas id="manager_3"></canvas></div>
+      <div class="chart-container"><canvas id="manager_4"></canvas></div>
+      <div class="chart-container"><canvas id="manager_5"></canvas></div>
+      <div class="chart-container"><canvas id="manager_6"></canvas></div>
+    </div>
+  </div>
+
   <!-- TELA 1 -->
-  <div id="screen1" class="screen active">
+  <div id="screen1" class="screen">
     <div class="dashboard">
       <div class="chart-container"><canvas id="chart1_1"></canvas></div>
       <div class="chart-container"><canvas id="chart1_2"></canvas></div>
@@ -136,17 +158,35 @@
       }
     };
 
+    const DATA_SCREENS = Object.keys(SCREENS_CONFIG);
+    const MANAGEMENT_SCREEN = 'screenManager';
+    const SCREEN_SEQUENCE = [];
+
+    DATA_SCREENS.forEach((screenId) => {
+      SCREEN_SEQUENCE.push(MANAGEMENT_SCREEN, screenId);
+    });
+
     const SWITCH_INTERVAL = 30000;  // 30s
     const AUTO_REFRESH    = 300000; // 5min
 
     // ========== VARIÁVEIS GLOBAIS ==========
-    let currentScreen = 'screen1';
-    let screensData = {
+    let currentScreenIndex = 0;
+    let currentScreen = SCREEN_SEQUENCE[currentScreenIndex];
+
+    const screensData = {
       screen1: { data: [], hasError: false, errorMsg: '', needsDraw: false },
       screen2: { data: [], hasError: false, errorMsg: '', needsDraw: false }
     };
 
     const charts = {
+      screenManager: [
+        { canvas: document.getElementById('manager_1'), ctx: null },
+        { canvas: document.getElementById('manager_2'), ctx: null },
+        { canvas: document.getElementById('manager_3'), ctx: null },
+        { canvas: document.getElementById('manager_4'), ctx: null },
+        { canvas: document.getElementById('manager_5'), ctx: null },
+        { canvas: document.getElementById('manager_6'), ctx: null }
+      ],
       screen1: [
         { canvas: document.getElementById('chart1_1'), ctx: null },
         { canvas: document.getElementById('chart1_2'), ctx: null },
@@ -171,7 +211,6 @@
     // ========== HELPERS VISIBILIDADE / DESENHO ==========
     function isScreenVisible(screenId) {
       const el = document.getElementById(screenId);
-      // ativo + não está display:none (offsetParent null quando display none)
       return el && el.classList.contains('active') && el.offsetParent !== null;
     }
 
@@ -200,6 +239,12 @@
 
     function ensureDraw(screenId) {
       const sd = screensData[screenId];
+      if (screenId === MANAGEMENT_SCREEN) {
+        if (!isScreenVisible(screenId)) return;
+        drawManagementScreen();
+        return;
+      }
+
       if (!sd || sd.hasError || !sd.data.length) return;
       if (!isScreenVisible(screenId)) { sd.needsDraw = true; return; }
 
@@ -472,6 +517,185 @@
       }
     }
 
+    function drawKpiCard(ctx, canvas, title, lines) {
+      resizeCanvas(canvas);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 26);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 30px Arial';
+      ctx.fillText(lines[0] || '-', canvas.width / 2, canvas.height / 2 - 6);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '14px Arial';
+      ctx.fillText(lines[1] || '', canvas.width / 2, canvas.height / 2 + 18);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px Arial';
+      ctx.fillText(lines[2] || '', canvas.width / 2, canvas.height / 2 + 40);
+    }
+
+    function drawDonutChart(ctx, canvas, labels, values, colors, title) {
+      resizeCanvas(canvas);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const total = values.reduce((sum, v) => sum + (isFinite(v) ? v : 0), 0);
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2 + 8;
+      const radius = Math.min(canvas.width, canvas.height) * 0.32;
+      const innerRadius = radius * 0.6;
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 20);
+
+      if (total <= 0) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '14px Arial';
+        ctx.fillText('Sem dados disponíveis', canvas.width / 2, canvas.height / 2);
+        return;
+      }
+
+      let startAngle = -Math.PI / 2;
+      values.forEach((value, index) => {
+        const slice = (value / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + slice);
+        ctx.fillStyle = colors[index];
+        ctx.fill();
+        startAngle += slice;
+      });
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#1e293b';
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('100%', centerX, centerY + 6);
+
+      const legendStartY = canvas.height - 40;
+      labels.forEach((label, index) => {
+        const x = canvas.width / 2 - 90 + index * 90;
+        ctx.fillStyle = colors[index];
+        ctx.fillRect(x, legendStartY, 12, 12);
+        ctx.fillStyle = '#cbd5f5';
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${label}: ${Math.round(values[index])}h`, x + 16, legendStartY + 10);
+      });
+    }
+
+    function drawGaugeChart(ctx, canvas, value, title, suffix) {
+      resizeCanvas(canvas);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height * 0.65;
+      const radius = Math.min(canvas.width, canvas.height) * 0.35;
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, centerX, 20);
+
+      ctx.lineWidth = 16;
+      ctx.strokeStyle = '#334155';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, Math.PI, 0);
+      ctx.stroke();
+
+      const clamped = Math.max(0, Math.min(value, 100));
+      const endAngle = Math.PI + (clamped / 100) * Math.PI;
+      ctx.strokeStyle = clamped >= 85 ? '#22c55e' : clamped >= 60 ? '#f59e0b' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText(`${clamped.toFixed(1)}${suffix}`, centerX, centerY + 10);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px Arial';
+      ctx.fillText('Meta 85%', centerX, centerY + 34);
+    }
+
+    function drawComparisonChart(ctx, canvas, labels, values, title, color) {
+      resizeCanvas(canvas);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const padding = 40;
+      const barHeight = 26;
+      const gap = 18;
+      const maxValue = Math.max(...values, 1);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 20);
+
+      labels.forEach((label, i) => {
+        const y = padding + i * (barHeight + gap);
+        const barWidth = (values[i] / maxValue) * (canvas.width - padding * 2);
+
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(padding, y, canvas.width - padding * 2, barHeight);
+
+        ctx.fillStyle = color;
+        ctx.fillRect(padding, y, barWidth, barHeight);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, padding, y - 6);
+
+        ctx.textAlign = 'right';
+        ctx.fillText(values[i].toFixed(0), canvas.width - padding, y + 18);
+      });
+    }
+
+    function drawUtilizationBars(ctx, canvas, labels, values) {
+      resizeCanvas(canvas);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const padding = 40;
+      const barHeight = 22;
+      const gap = 16;
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Utilização média por setor', canvas.width / 2, 20);
+
+      labels.forEach((label, i) => {
+        const y = padding + i * (barHeight + gap);
+        const value = Math.max(0, Math.min(values[i], 100));
+        const barWidth = (value / 100) * (canvas.width - padding * 2);
+
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(padding, y, canvas.width - padding * 2, barHeight);
+
+        ctx.fillStyle = value >= 85 ? '#22c55e' : value >= 60 ? '#f59e0b' : '#ef4444';
+        ctx.fillRect(padding, y, barWidth, barHeight);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, padding, y - 6);
+
+        ctx.textAlign = 'right';
+        ctx.fillText(`${value.toFixed(1)}%`, canvas.width - padding, y + 16);
+      });
+    }
+
     // ========== PROCESSAMENTO DE DADOS ==========
     function parseHMS(value) {
       try {
@@ -535,6 +759,91 @@
       }
     }
 
+    function getScreenSummary(screenId) {
+      const data = screensData[screenId]?.data || [];
+      const utilValues = data.map(d => d.util).filter(v => isFinite(v));
+      const tcValues = data.map(d => d.tcMedio).filter(v => isFinite(v));
+
+      const totalPecas = data.reduce((sum, d) => sum + (d.pecas || 0), 0);
+      const totalFunc = data.reduce((sum, d) => sum + (d.funcionando || 0), 0);
+      const totalParado = data.reduce((sum, d) => sum + (d.parado || 0), 0);
+
+      const avgUtil = utilValues.length ? utilValues.reduce((sum, v) => sum + v, 0) / utilValues.length : 0;
+      const avgTc = tcValues.length ? tcValues.reduce((sum, v) => sum + v, 0) / tcValues.length : 0;
+
+      return {
+        name: SCREENS_CONFIG[screenId]?.name || screenId,
+        totalPecas,
+        totalFunc,
+        totalParado,
+        avgUtil,
+        avgTc
+      };
+    }
+
+    function drawManagementScreen() {
+      const summaries = DATA_SCREENS.map(getScreenSummary);
+      const totalPecas = summaries.reduce((sum, s) => sum + s.totalPecas, 0);
+      const totalFunc = summaries.reduce((sum, s) => sum + s.totalFunc, 0);
+      const totalParado = summaries.reduce((sum, s) => sum + s.totalParado, 0);
+      const avgUtil = summaries.length
+        ? summaries.reduce((sum, s) => sum + s.avgUtil, 0) / summaries.length
+        : 0;
+
+      drawKpiCard(
+        charts.screenManager[0].ctx,
+        charts.screenManager[0].canvas,
+        'Visão Geral (Hoje)',
+        [
+          `${totalPecas.toFixed(0)} peças`,
+          `${totalFunc.toFixed(1)}h funcionando`,
+          `${totalParado.toFixed(1)}h paradas`
+        ]
+      );
+
+      drawDonutChart(
+        charts.screenManager[1].ctx,
+        charts.screenManager[1].canvas,
+        ['Funcionando', 'Parado'],
+        [totalFunc, totalParado],
+        ['#22c55e', '#ef4444'],
+        'Distribuição de horas'
+      );
+
+      drawGaugeChart(
+        charts.screenManager[2].ctx,
+        charts.screenManager[2].canvas,
+        avgUtil,
+        'Utilização média (geral)',
+        '%'
+      );
+
+      drawComparisonChart(
+        charts.screenManager[3].ctx,
+        charts.screenManager[3].canvas,
+        summaries.map(s => s.name),
+        summaries.map(s => s.totalPecas),
+        'Peças por setor',
+        '#3b82f6'
+      );
+
+      drawUtilizationBars(
+        charts.screenManager[4].ctx,
+        charts.screenManager[4].canvas,
+        summaries.map(s => s.name),
+        summaries.map(s => s.avgUtil)
+      );
+
+      drawComparisonChart(
+        charts.screenManager[5].ctx,
+        charts.screenManager[5].canvas,
+        summaries.map(s => s.name),
+        summaries.map(s => s.avgTc),
+        'TC médio por setor (min/peça)',
+        '#f59e0b'
+      );
+    }
+
     function drawAllCharts(screenId, data) {
       try {
         const labels = data.map(d => d.label);
@@ -565,7 +874,6 @@
     }
 
     function showErrorOnScreen(screenId, message) {
-      // ✅ Não destrói os canvas (assim, quando voltar a funcionar, redesenha normal)
       const title = `${SCREENS_CONFIG[screenId]?.name || screenId} - erro`;
       charts[screenId].forEach((c) => drawCenteredMessage(c.ctx, c.canvas, title, `❌ ${message}`));
     }
@@ -582,10 +890,6 @@
 
         const json = await response.json();
 
-        // Debug rápido (se quiser ver diferença entre APIs)
-        // console.log(`[${screenId}] headers:`, json.headers);
-        // console.log(`[${screenId}] first row:`, (json.rows || [])[0]);
-
         const data = parseData(json);
         if (data.length === 0) throw new Error('Nenhum dado disponível');
 
@@ -593,7 +897,6 @@
         screensData[screenId].hasError = false;
         screensData[screenId].errorMsg = '';
 
-        // ✅ Só desenha se a tela estiver visível; se não, marca pra desenhar quando aparecer
         ensureDraw(screenId);
 
         console.log(`${SCREENS_CONFIG[screenId].name} carregada com sucesso!`);
@@ -606,39 +909,41 @@
     }
 
     async function loadAllScreens() {
-      await Promise.all([ loadScreenData('screen1'), loadScreenData('screen2') ]);
+      await Promise.all(DATA_SCREENS.map(loadScreenData));
 
       document.getElementById('loading').classList.add('hidden');
       updateStatus();
 
-      // ✅ garante que a tela atual foi desenhada
       ensureDraw(currentScreen);
+      if (isScreenVisible(MANAGEMENT_SCREEN)) {
+        drawManagementScreen();
+      }
     }
 
     // ========== ALTERNÂNCIA DE TELAS ==========
     function switchScreen() {
-      const screen1El = document.getElementById('screen1');
-      const screen2El = document.getElementById('screen2');
+      const previousScreen = currentScreen;
+      currentScreenIndex = (currentScreenIndex + 1) % SCREEN_SEQUENCE.length;
+      currentScreen = SCREEN_SEQUENCE[currentScreenIndex];
 
-      if (currentScreen === 'screen1') {
-        screen1El.classList.remove('active');
-        screen2El.classList.add('active');
-        currentScreen = 'screen2';
-      } else {
-        screen2El.classList.remove('active');
-        screen1El.classList.add('active');
-        currentScreen = 'screen1';
-      }
+      const previousEl = document.getElementById(previousScreen);
+      const currentEl = document.getElementById(currentScreen);
+      if (previousEl) previousEl.classList.remove('active');
+      if (currentEl) currentEl.classList.add('active');
 
       updateStatus();
 
-      // ✅ O ponto crítico: redesenha depois que a tela ficou visível (canvas agora tem tamanho real)
       requestAnimationFrame(() => {
         ensureDraw(currentScreen);
       });
     }
 
     function updateStatus() {
+      if (currentScreen === MANAGEMENT_SCREEN) {
+        document.getElementById('status').textContent = `GERENCIAL - resumo geral • ${new Date().toLocaleTimeString('pt-BR')}`;
+        return;
+      }
+
       const config = SCREENS_CONFIG[currentScreen];
       const screenData = screensData[currentScreen];
 
@@ -654,7 +959,6 @@
     }
 
     // ========== INICIALIZAÇÃO ==========
-    // ✅ No resize, redesenha só a tela visível (evita canvas 0x0 na tela escondida)
     window.addEventListener('resize', () => {
       ensureDraw(currentScreen);
     });
@@ -666,4 +970,3 @@
   </script>
 </body>
 </html>
-
