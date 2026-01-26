@@ -810,6 +810,7 @@
 
       const avgUtil = utilValues.length ? utilValues.reduce((sum, v) => sum + v, 0) / utilValues.length : 0;
       const avgTc = tcValues.length ? tcValues.reduce((sum, v) => sum + v, 0) / tcValues.length : 0;
+      const latestUtil = utilValues.length ? utilValues[utilValues.length - 1] : 0;
 
       return {
         name: SCREENS_CONFIG[screenId]?.name || screenId,
@@ -817,7 +818,8 @@
         totalFunc,
         totalParado,
         avgUtil,
-        avgTc
+        avgTc,
+        latestUtil
       };
     }
 
@@ -871,7 +873,7 @@
         charts.screenManager[4].ctx,
         charts.screenManager[4].canvas,
         summaries.map(s => s.name),
-        summaries.map(s => s.avgUtil)
+        summaries.map(s => s.latestUtil)
       );
 
       drawComparisonChart(
