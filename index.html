@@ -401,7 +401,7 @@
       }
     }
 
-    function drawBarChart(ctx, canvas, labels, values, title, color, suffix = '') {
+    function drawBarChart(ctx, canvas, labels, values, title, color, suffix = '', thresholds = null) {
       try {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -421,6 +421,7 @@
         }
 
         const maxValue = Math.max(...validValues, 1);
+        const minValue = Math.min(...validValues, 0);
 
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 16px Arial';
@@ -435,6 +436,36 @@
           ctx.moveTo(padding, y);
           ctx.lineTo(canvas.width - padding, y);
           ctx.stroke();
+        }
+
+        if (thresholds) {
+          const { min, max, minColor, maxColor } = thresholds;
+          const range = maxValue - minValue || 1;
+          const minY = padding + chartHeight - ((min - minValue) / range) * chartHeight;
+          const maxY = padding + chartHeight - ((max - minValue) / range) * chartHeight;
+
+          ctx.strokeStyle = minColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, minY);
+          ctx.lineTo(canvas.width - padding, minY);
+          ctx.stroke();
+
+          ctx.strokeStyle = maxColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, maxY);
+          ctx.lineTo(canvas.width - padding, maxY);
+          ctx.stroke();
+
+          ctx.fillStyle = minColor;
+          ctx.font = '11px Arial';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Min ${min}${suffix}`, padding + 4, minY - 4);
+
+          ctx.fillStyle = maxColor;
+          ctx.textAlign = 'left';
+          ctx.fillText(`Max ${max}${suffix}`, padding + 4, maxY - 4);
         }
 
         labels.forEach((label, i) => {
@@ -471,7 +502,7 @@
       }
     }
 
-    function drawStackedBarChart(ctx, canvas, labels, values1, values2, title, color1, color2, label1, label2) {
+    function drawStackedBarChart(ctx, canvas, labels, values1, values2, title, color1, color2, label1, label2, thresholds = null) {
       try {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -497,6 +528,7 @@
         }
 
         const maxValue = Math.max(...maxValues, 1);
+        const minValue = Math.min(...maxValues, 0);
 
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 16px Arial';
@@ -524,6 +556,36 @@
           ctx.moveTo(padding, y);
           ctx.lineTo(canvas.width - padding, y);
           ctx.stroke();
+        }
+
+        if (thresholds) {
+          const { min, max, minColor, maxColor, labelSuffix = '' } = thresholds;
+          const range = maxValue - minValue || 1;
+          const minY = padding + 20 + chartHeight - ((min - minValue) / range) * chartHeight;
+          const maxY = padding + 20 + chartHeight - ((max - minValue) / range) * chartHeight;
+
+          ctx.strokeStyle = minColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, minY);
+          ctx.lineTo(canvas.width - padding, minY);
+          ctx.stroke();
+
+          ctx.strokeStyle = maxColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(padding, maxY);
+          ctx.lineTo(canvas.width - padding, maxY);
+          ctx.stroke();
+
+          ctx.fillStyle = minColor;
+          ctx.font = '11px Arial';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Min ${min}${labelSuffix}`, padding + 4, minY - 4);
+
+          ctx.fillStyle = maxColor;
+          ctx.textAlign = 'left';
+          ctx.fillText(`Max ${max}${labelSuffix}`, padding + 4, maxY - 4);
         }
 
         labels.forEach((label, i) => {
@@ -767,6 +829,12 @@
       });
     }
 
+    function getMinMax(values) {
+      const valid = values.filter(v => v !== null && !isNaN(v) && isFinite(v));
+      if (!valid.length) return null;
+      return { min: Math.min(...valid), max: Math.max(...valid) };
+    }
+
     // ========== PROCESSAMENTO DE DADOS ==========
     function parseHMS(value) {
       try {
@@ -918,6 +986,9 @@
         const tcMedioData = data.map(d => d.tcMedio);
 
         resizeCanvas(charts[screenId][0].canvas);
+        const softMinColor = 'rgba(239, 68, 68, 0.45)';
+        const softMaxColor = 'rgba(34, 197, 94, 0.45)';
+
         drawLineChart(
           charts[screenId][0].ctx,
           charts[screenId][0].canvas,
@@ -929,23 +1000,46 @@
           {
             min: UTIL_MIN_TARGET,
             max: UTIL_MAX_TARGET,
-            minColor: 'rgba(239, 68, 68, 0.45)',
-            maxColor: 'rgba(34, 197, 94, 0.45)'
+            minColor: softMinColor,
+            maxColor: softMaxColor
           }
         );
 
+        const pecasRange = getMinMax(pecasData);
+        const horasTotaisRange = getMinMax(funcionandoData.map((val, i) => (val || 0) + (paradoData[i] || 0)));
+        const tcRange = getMinMax(tcMedioData);
+
         resizeCanvas(charts[screenId][1].canvas);
-        drawBarChart(charts[screenId][1].ctx, charts[screenId][1].canvas, labels, pecasData, 'Peças Fabricadas', '#22c55e', '');
+        drawBarChart(
+          charts[screenId][1].ctx,
+          charts[screenId][1].canvas,
+          labels,
+          pecasData,
+          'Peças Fabricadas',
+          '#22c55e',
+          '',
+          pecasRange ? { ...pecasRange, minColor: softMinColor, maxColor: softMaxColor } : null
+        );
 
         resizeCanvas(charts[screenId][2].canvas);
         drawStackedBarChart(
           charts[screenId][2].ctx, charts[screenId][2].canvas,
           labels, funcionandoData, paradoData,
-          'Horas Func. / Parado', '#22c55e', '#ef4444', 'Funcionando', 'Parado'
+          'Horas Func. / Parado', '#22c55e', '#ef4444', 'Funcionando', 'Parado',
+          horasTotaisRange ? { ...horasTotaisRange, minColor: softMinColor, maxColor: softMaxColor, labelSuffix: 'h' } : null
         );
 
         resizeCanvas(charts[screenId][3].canvas);
-        drawLineChart(charts[screenId][3].ctx, charts[screenId][3].canvas, labels, tcMedioData, 'TC Médio (min/peça)', '#f59e0b', ' min');
+        drawLineChart(
+          charts[screenId][3].ctx,
+          charts[screenId][3].canvas,
+          labels,
+          tcMedioData,
+          'TC Médio (min/peça)',
+          '#f59e0b',
+          ' min',
+          tcRange ? { ...tcRange, minColor: softMinColor, maxColor: softMaxColor } : null
+        );
       } catch (error) {
         console.error('Erro no drawAllCharts:', error);
       }
