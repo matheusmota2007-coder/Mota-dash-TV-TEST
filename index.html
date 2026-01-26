@@ -801,35 +801,25 @@
 
     function getScreenSummary(screenId) {
       const data = screensData[screenId]?.data || [];
-      const utilValues = data.map(d => d.util).filter(v => isFinite(v));
-      const tcValues = data.map(d => d.tcMedio).filter(v => isFinite(v));
-
-      const totalPecas = data.reduce((sum, d) => sum + (d.pecas || 0), 0);
-      const totalFunc = data.reduce((sum, d) => sum + (d.funcionando || 0), 0);
-      const totalParado = data.reduce((sum, d) => sum + (d.parado || 0), 0);
-
-      const avgUtil = utilValues.length ? utilValues.reduce((sum, v) => sum + v, 0) / utilValues.length : 0;
-      const avgTc = tcValues.length ? tcValues.reduce((sum, v) => sum + v, 0) / tcValues.length : 0;
-      const latestUtil = utilValues.length ? utilValues[utilValues.length - 1] : 0;
+      const latestEntry = data.length ? data[0] : null;
 
       return {
         name: SCREENS_CONFIG[screenId]?.name || screenId,
-        totalPecas,
-        totalFunc,
-        totalParado,
-        avgUtil,
-        avgTc,
-        latestUtil
+        latestPecas: latestEntry?.pecas || 0,
+        latestFunc: latestEntry?.funcionando || 0,
+        latestParado: latestEntry?.parado || 0,
+        latestUtil: isFinite(latestEntry?.util) ? latestEntry.util : 0,
+        latestTc: isFinite(latestEntry?.tcMedio) ? latestEntry.tcMedio : 0
       };
     }
 
     function drawManagementScreen() {
       const summaries = DATA_SCREENS.map(getScreenSummary);
-      const totalPecas = summaries.reduce((sum, s) => sum + s.totalPecas, 0);
-      const totalFunc = summaries.reduce((sum, s) => sum + s.totalFunc, 0);
-      const totalParado = summaries.reduce((sum, s) => sum + s.totalParado, 0);
-      const avgUtil = summaries.length
-        ? summaries.reduce((sum, s) => sum + s.avgUtil, 0) / summaries.length
+      const totalPecas = summaries.reduce((sum, s) => sum + s.latestPecas, 0);
+      const totalFunc = summaries.reduce((sum, s) => sum + s.latestFunc, 0);
+      const totalParado = summaries.reduce((sum, s) => sum + s.latestParado, 0);
+      const utilizationOverall = (totalFunc + totalParado) > 0
+        ? (totalFunc / (totalFunc + totalParado)) * 100
         : 0;
 
       drawKpiCard(
@@ -855,8 +845,8 @@
       drawGaugeChart(
         charts.screenManager[2].ctx,
         charts.screenManager[2].canvas,
-        avgUtil,
-        'Utilização média (geral)',
+        utilizationOverall,
+        'Utilização atual (geral)',
         '%'
       );
 
@@ -864,7 +854,7 @@
         charts.screenManager[3].ctx,
         charts.screenManager[3].canvas,
         summaries.map(s => s.name),
-        summaries.map(s => s.totalPecas),
+        summaries.map(s => s.latestPecas),
         'Peças por setor',
         '#3b82f6'
       );
@@ -880,7 +870,7 @@
         charts.screenManager[5].ctx,
         charts.screenManager[5].canvas,
         summaries.map(s => s.name),
-        summaries.map(s => s.avgTc),
+        summaries.map(s => s.latestTc),
         'TC médio por setor (min/peça)',
         '#f59e0b',
         value => value.toFixed(1)
