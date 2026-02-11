@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mota-dark: #0a0e19;
+  --color-mota-panel: #1e293b;
+}
+
+body {
+  @apply bg-mota-dark text-slate-200 antialiased;
+}
+
+@keyframes motaFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mota-fade-in {
+  animation: motaFadeIn 320ms ease-out both;
+}
