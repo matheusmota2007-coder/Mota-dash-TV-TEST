@@ -210,8 +210,8 @@ function SemiGauge({ valuePercent, targetPercent }) {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className="w-full h-full min-h-0">
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -230,10 +230,10 @@ function SemiGauge({ valuePercent, targetPercent }) {
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-      </div>
-      <div className="pointer-events-none -mt-14 text-center">
-        <div className="text-white text-3xl font-black">{formatPercent(valuePercent)}</div>
-        <div className="text-slate-400 text-sm">Meta {formatPercent(targetPercent)}</div>
+        <div className="pointer-events-none absolute inset-x-0 top-[58%] text-center">
+          <div className="text-white text-3xl font-black">{formatPercent(valuePercent)}</div>
+          <div className="text-slate-400 text-sm">Meta {formatPercent(targetPercent)}</div>
+        </div>
       </div>
     </div>
   );

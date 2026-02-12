@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import AppLayout from "./components/AppLayout";
 import SectorChartsScreen from "./components/SectorChartsScreen";
 import SummaryScreen from "./components/SummaryScreen";
@@ -78,6 +78,7 @@ export default function App() {
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [screenStartedAt, setScreenStartedAt] = useState(() => Date.now());
   const [screenProgress, setScreenProgress] = useState(1);
+  const hasLoadedOnceRef = useRef(false);
 
   useEffect(() => {
     const timer = setInterval(() => setClock(new Date()), 1000);
@@ -86,6 +87,7 @@ export default function App() {
 
   useEffect(() => {
     setSectorState(createInitialSectorState(sectors));
+    hasLoadedOnceRef.current = false;
     setLoading(true);
     setScreenIndex(0);
   }, [sectors]);
@@ -137,6 +139,11 @@ export default function App() {
     });
 
     setLastRefreshAt(new Date());
+    if (!hasLoadedOnceRef.current) {
+      hasLoadedOnceRef.current = true;
+      setScreenStartedAt(Date.now());
+      setScreenProgress(1);
+    }
     setLoading(false);
   }, [columns, sectors]);
 
@@ -154,20 +161,29 @@ export default function App() {
 
   useEffect(() => {
     if (!dashboardConfig) return;
+    if (loading) return;
     if (!effectiveScreensOrder.length) return;
     const timer = setInterval(() => {
+      setScreenStartedAt(Date.now());
+      setScreenProgress(1);
       setScreenIndex((i) => (i + 1) % effectiveScreensOrder.length);
     }, switchIntervalMs);
     return () => clearInterval(timer);
-  }, [dashboardConfig, effectiveScreensOrder.length, switchIntervalMs]);
+  }, [dashboardConfig, effectiveScreensOrder.length, loading, switchIntervalMs]);
 
   const goNextScreen = useCallback(() => {
+    if (loading) return;
+    setScreenStartedAt(Date.now());
+    setScreenProgress(1);
     setScreenIndex((i) => (i + 1) % effectiveScreensOrder.length);
-  }, [effectiveScreensOrder.length]);
+  }, [effectiveScreensOrder.length, loading]);
 
   const goPrevScreen = useCallback(() => {
+    if (loading) return;
+    setScreenStartedAt(Date.now());
+    setScreenProgress(1);
     setScreenIndex((i) => (i - 1 + effectiveScreensOrder.length) % effectiveScreensOrder.length);
-  }, [effectiveScreensOrder.length]);
+  }, [effectiveScreensOrder.length, loading]);
 
   useEffect(() => {
     if (screenIndex >= effectiveScreensOrder.length) {
@@ -176,19 +192,19 @@ export default function App() {
   }, [effectiveScreensOrder.length, screenIndex]);
 
   useEffect(() => {
-    setScreenStartedAt(Date.now());
-  }, [screenIndex]);
-
-  useEffect(() => {
+    if (loading) return;
     const tick = () => {
       const elapsed = Date.now() - screenStartedAt;
       const remaining = Math.max(0, switchIntervalMs - elapsed);
       setScreenProgress(switchIntervalMs > 0 ? remaining / switchIntervalMs : 0);
     };
-    tick();
+    const initial = setTimeout(tick, 0);
     const timer = setInterval(tick, 100);
-    return () => clearInterval(timer);
-  }, [screenStartedAt, switchIntervalMs]);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(timer);
+    };
+  }, [loading, screenStartedAt, switchIntervalMs]);
 
   const activeSector = useMemo(() => sectors.find((s) => s.id === activeScreenId), [activeScreenId, sectors]);
 
@@ -231,7 +247,7 @@ export default function App() {
       badge={badge}
       onPrevScreen={goPrevScreen}
       onNextScreen={goNextScreen}
-      progress={screenProgress}
+      progress={loading ? 1 : screenProgress}
       footer={
         lastRefreshAt
           ? `Sincronizado com Google Sheets • Última atualização: ${lastRefreshAt.toLocaleTimeString("pt-BR")}`

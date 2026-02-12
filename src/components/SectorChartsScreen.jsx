@@ -31,14 +31,7 @@ const tooltipStyle = {
 
 export default function SectorChartsScreen({ series }) {
   const data = Array.isArray(series) ? series : [];
-  const xAxisInterval = React.useMemo(() => {
-    const length = data.length;
-    if (length <= 8) return 0;
-    if (length <= 14) return 1;
-    if (length <= 20) return 2;
-    if (length <= 30) return 3;
-    return Math.ceil(length / 8) - 1;
-  }, [data.length]);
+  const xAxisInterval = 1;
 
   const xAxisProps = {
     dataKey: "label",
