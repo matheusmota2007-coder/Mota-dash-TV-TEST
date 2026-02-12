@@ -1,0 +1,26 @@
+{
+    "title": "Dashboard de Produção - Mota TV",
+    "switchIntervalMs": 30000,
+    "refreshIntervalMs": 300000,
+    "screensOrder": [
+        "summary",
+        "view1"
+    ],
+    "columns": {
+        "date": "data",
+        "pieces": "Peças Fabric.",
+        "running": "Funcionando",
+        "stopped": "Parado",
+        "utilization": "utilização de Maquina",
+        "tcMedio": "TC MEDIO",
+        "targetUtilization": "maximo"
+    },
+    "sectors": [
+        {
+            "id": "view1",
+            "name": "View1",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbzCM0OW9g_jtBQsxkx5ISGzOG_6M-m9t6K6SgjF4HW6rv6la1hByHKXEi05UoMJDFVm/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        }
+    ]
+}
