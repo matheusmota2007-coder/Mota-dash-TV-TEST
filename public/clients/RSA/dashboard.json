@@ -4,7 +4,7 @@
     "refreshIntervalMs": 300000,
     "screensOrder": [
         "summary",
-        "OVERLOCK",
+        "ESP_05_OVERLOCK",
         "ESP_06_GALONEIRA AUTOMATICA",
         "ESP_07_PRENSA 9",
         "ESP_09_PRENSA 10",
