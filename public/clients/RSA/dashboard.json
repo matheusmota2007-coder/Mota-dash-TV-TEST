@@ -1,0 +1,33 @@
+{
+    "title": "Dashboard de Produção - Mota TV",
+    "switchIntervalMs": 30000,
+    "refreshIntervalMs": 300000,
+    "screensOrder": [
+        "summary",
+        "prensa",
+        "bordado"
+    ],
+    "columns": {
+        "date": "data",
+        "pieces": "Peças Fabric.",
+        "running": "Funcionando",
+        "stopped": "Parado",
+        "utilization": "utilização de Maquina",
+        "tcMedio": "TC MEDIO",
+        "targetUtilization": "maximo"
+    },
+    "sectors": [
+        {
+            "id": "prensa",
+            "name": "PRENSA",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbyXnyKaSqswIEaUVK6Q81J0VKbWh1_vBJogyzvzd6bOmKjHd73032jRsUZdgFhaTccDgg/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "bordado",
+            "name": "BORDADO",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbwTnkXg_4IVvI0ZdL88T-RFis2E7UrAQduHoQ6B4CSCFXRa74iVYagEAUjJu5uFSQAQ/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        }
+    ]
+}
