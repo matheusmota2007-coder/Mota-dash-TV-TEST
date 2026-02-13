@@ -13,7 +13,10 @@
         "ESP 13 prensa 06",
         "ESP 14 Overlock 1",
         "ESP 15 Galoneira 4",
-        "ESP 16 Overlock 2"
+        "ESP 16 Overlock 2",
+        "ESP 17 Galoneira 1",
+        "ESP 18 overlock 5",
+        "ESP 19 Overlock 4"
     ],
     "columns": {
         "date": "data",
@@ -84,7 +87,27 @@
             "name": "ESP 16 Overlock 2",
             "apiUrl": "https://script.google.com/macros/s/AKfycbxFGwFWI8s4yPRhbRcNeJIqvHd-edh9KXSbb00OjyNU_na2TfqxzCMEVWgu2P2U7-3MMA/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 17 Galoneira 1",
+            "name": "ESP 17 Galoneira 1",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbyxtDNt3bS9L9hnTySCUQQPSeqZUpLI_Q-3odmSeUQTBJVojPXxfBU_G6wGXmWsdQEL/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 18 overlock 5",
+            "name": "ESP 18 overlock 5",
+            "apiUrl": "https://script.google.com/macros/library/d/1GjtG5nXXI0vk_pu0I0i4U_DVqmR0lea5PyvX2dThLbdf4grQAQzy2uY8/2",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 19 Overlock 4",
+            "name": "ESP 19 Overlock 4",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbz9l2YazKYK-HG-V5FfRiIg1Ail3jQuc5HkGjbpYV9D96oraopWFZYXuEXK41ros4mz/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
+
+
 
     ]
 }
