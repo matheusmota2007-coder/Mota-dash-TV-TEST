@@ -1,0 +1,33 @@
+{
+    "title": "Dashboard de Produção - Mota TV",
+    "switchIntervalMs": 30000,
+    "refreshIntervalMs": 300000,
+    "screensOrder": [
+        "summary",
+        "COSTURA",
+        "CORTE"
+    ],
+    "columns": {
+        "date": "data",
+        "pieces": "Peças Fabric.",
+        "running": "Funcionando",
+        "stopped": "Parado",
+        "utilization": "utilização de Maquina",
+        "tcMedio": "TC MEDIO",
+        "targetUtilization": "maximo"
+    },
+    "sectors": [
+        {
+            "id": "COSTURA",
+            "name": "COSTURA",
+            "apiUrl": "https://script.google.com/macros/s/AKfycby_3t7BRTEItZeBDKRPF2bEJV02Mw-_ryy9TwaSkMbYQKRpynbjR1U2BLlfA95bBEU9/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "CORTE",
+            "name": "CORTE",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbx-oyhUhYrOOnNR0-SaVOG2gNMDOu0ZNW8BhjGsDuvjJGq28Ge3mjhEX6mY8PLygEPygg/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        }
+    ]
+}
