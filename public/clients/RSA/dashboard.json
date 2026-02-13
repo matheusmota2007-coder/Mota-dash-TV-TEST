@@ -4,8 +4,8 @@
     "refreshIntervalMs": 300000,
     "screensOrder": [
         "summary",
-        "prensa",
-        "bordado"
+        "ESP_05_OVERLOCK",
+        "ESP_06_GALONEIRA AUTOMATICA"
     ],
     "columns": {
         "date": "data",
@@ -18,15 +18,15 @@
     },
     "sectors": [
         {
-            "id": "prensa",
-            "name": "PRENSA",
-            "apiUrl": "https://script.google.com/macros/s/AKfycbyXnyKaSqswIEaUVK6Q81J0VKbWh1_vBJogyzvzd6bOmKjHd73032jRsUZdgFhaTccDgg/exec",
+            "id": "ESP_05_OVERLOCK",
+            "name": "ESP_05_OVERLOCK",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbx3YngtiUOYm1-barwXd4pIdTpm3B6k6jkr_uDalilwTpo0ngnfX1sDO-QRm5ZuI6cP/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "bordado",
-            "name": "BORDADO",
-            "apiUrl": "https://script.google.com/macros/s/AKfycbwTnkXg_4IVvI0ZdL88T-RFis2E7UrAQduHoQ6B4CSCFXRa74iVYagEAUjJu5uFSQAQ/exec",
+            "id": "ESP_06_GALONEIRA AUTOMATICA",
+            "name": "ESP_06_GALONEIRA AUTOMATICA",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbwb0Ve9n5eXUcZgh004UhbkojYmnEhCNbYIIjWjwNzHbpuscqgCEValOltQUYIOUYRK/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
     ]
