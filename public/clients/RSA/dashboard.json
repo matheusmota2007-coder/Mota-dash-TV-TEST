@@ -10,7 +10,8 @@
         "ESP_09_PRENSA 10",
         "ESP 10 PRENSA 07",
         "ESP 12 PRENSA  02",
-        "ESP 13 prensa 06"
+        "ESP 13 prensa 06",
+        "ESP 14 Overlock 1"
     ],
     "columns": {
         "date": "data",
@@ -62,6 +63,12 @@
             "id": "ESP 13 prensa 06",
             "name": "ESP 13 prensa 06",
             "apiUrl": "https://script.google.com/macros/s/AKfycbzkFGULK6wcsCU0d3EFcvnShj3k6cDVO-UvTInKTRtO840y3hCjJTYFlJM_mo3H9eTN/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 14 Overlock 1",
+            "name": "ESP 14 Overlock 1",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbynNdiXDVVcK0aH-L55YiUvjG6_ptoAA5kUYkqfNYpnWT3D6yD3b8Lf0yDKgZfA-nK_/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
 
