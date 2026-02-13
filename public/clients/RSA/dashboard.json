@@ -17,7 +17,8 @@
         "ESP 17 Galoneira 1",
         "ESP 18 overlock 5",
         "ESP 19 Overlock 4",
-        "ESP 20 Galoneira 2"
+        "ESP 20 Galoneira 2",
+        "ESP 21 Overlock 6"
     ],
     "columns": {
         "date": "data",
@@ -112,7 +113,14 @@
             "name": "ESP 20 Galoneira 2",
             "apiUrl": "https://script.google.com/macros/s/AKfycbxkQRod0Ij0Br6Shv-zrZzXt4g-k3wC5hQ_zMMDE0WALjhPzdzfwVLQRkRd3LuiZgrQdQ/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 21 Overlock 6",
+            "name": "ESP 21 Overlock 6",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbyaN8l5AELYdE3IVwZuzeZWpMC5VBpoXeA88u3aKlwIMszLklWL-UV8ZEGLd5SV9Q4VpQ/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
+
 
 
 
