@@ -7,7 +7,8 @@
         "ESP_05_OVERLOCK",
         "ESP_06_GALONEIRA AUTOMATICA",
         "ESP_07_PRENSA 9",
-        "ESP_09_PRENSA 10"
+        "ESP_09_PRENSA 10",
+        "ESP 10 PRENSA 07"
     ],
     "columns": {
         "date": "data",
@@ -41,6 +42,12 @@
             "id": "ESP_09_PRENSA 10",
             "name": "ESP_09_PRENSA 10",
             "apiUrl": "https://script.google.com/macros/s/AKfycbwJpkqZp1bFeqZPMdkBnZE1lP7rSCK82Q9R_DqVA1jRs-slaok4TLr4tffvuXETfgPR/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 10 PRENSA 07",
+            "name": "ESP 10 PRENSA 07",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbxD-Fy5e611JmGOsIGQm3NTDogwMM0fhjwIxh13sgBIRrZ7pogO9xdsfRV6dlXCIqNp/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
 
