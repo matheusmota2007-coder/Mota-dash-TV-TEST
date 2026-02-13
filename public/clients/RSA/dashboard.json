@@ -22,7 +22,12 @@
         "ESP 22 Overlock 3",
         "ESP 23 prensa 5",
         "ESP 24 Overlock 7",
-        "ESP 26 Prensa 1"
+        "ESP 26 Prensa 1",
+        "ESP 27 Overlock 8",
+        "ESP30 Overlock 9",
+        "ESP  31 Overlock 10",
+        "ESP 34 Overlock 11",
+        "ESP 05 Overlock 12"
     ],
     "columns": {
         "date": "data",
@@ -147,12 +152,37 @@
             "name": "ESP 24 Overlock 7",
             "apiUrl": "https://script.google.com/macros/s/AKfycbzLh7IqC8FWaVQeIt64dOyEJx7Yf3mkwEY9tssZZdlW2OuEu7wcZaffhu9oaDhecXR5/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 27 Overlock 8",
+            "name": "ESP 27 Overlock 8",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbwCkw2PJHeykQTdxtgfG3jJ97BQTY_CyHmz-xsw_Szywty6MvcvxTcVyWpqjptGq43pHQ/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP30 Overlock 9",
+            "name": "ESP30 Overlock 9",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbwZecljuSIIskYxplNwz_NOn8TaxD-7hCaiV5PWaDf4BloN4QnGtqsgV1-3KcTQTfVr/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP  31 Overlock 10",
+            "name": "ESP  31 Overlock 10",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbw4lW4LFlJ21ilnmxSkXXNcrCYSjaEWp5kAvNwNPIzL1qy5z7FOJNlKUNsOHDU-bXQLJA/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 34 Overlock 11",
+            "name": "ESP 34 Overlock 11",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbxk4P0iTd3jCST90Uf2Imb74byacqr7SsFIUMfSTUrd3erRPFivAag5Dn3JErsJuMv8/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 34 Overlock 11",
+            "name": "ESP 34 Overlock 11",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbx3YngtiUOYm1-barwXd4pIdTpm3B6k6jkr_uDalilwTpo0ngnfX1sDO-QRm5ZuI6cP/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
-
-
-
-
-
 
     ]
 }
