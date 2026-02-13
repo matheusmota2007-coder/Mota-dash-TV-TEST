@@ -18,7 +18,11 @@
         "ESP 18 overlock 5",
         "ESP 19 Overlock 4",
         "ESP 20 Galoneira 2",
-        "ESP 21 Overlock 6"
+        "ESP 21 Overlock 6",
+        "ESP 22 Overlock 3",
+        "ESP 23 prensa 5",
+        "ESP 24 Overlock 7",
+        "ESP 26 Prensa 1"
     ],
     "columns": {
         "date": "data",
@@ -119,7 +123,33 @@
             "name": "ESP 21 Overlock 6",
             "apiUrl": "https://script.google.com/macros/s/AKfycbyaN8l5AELYdE3IVwZuzeZWpMC5VBpoXeA88u3aKlwIMszLklWL-UV8ZEGLd5SV9Q4VpQ/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 22 Overlock 3",
+            "name": "ESP 22 Overlock 3",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbx419NLJG2oN8-k-aA7UEBElT2AD62Y0sv2Tg9sLBNxcUqsqQrML0NKmX7_laukaFNIlQ/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 23 prensa 5",
+            "name": "ESP 23 prensa 5",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbwcIrSChSN_znin-ibGxQ4QKmTYbtrb5waJhsunNvDg40F6IgyXjHtZn3wFNNz-Niz0yw/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 24 Overlock 7",
+            "name": "ESP 24 Overlock 7",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbzLh7IqC8FWaVQeIt64dOyEJx7Yf3mkwEY9tssZZdlW2OuEu7wcZaffhu9oaDhecXR5/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "ESP 24 Overlock 7",
+            "name": "ESP 24 Overlock 7",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbzLh7IqC8FWaVQeIt64dOyEJx7Yf3mkwEY9tssZZdlW2OuEu7wcZaffhu9oaDhecXR5/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
+
+
 
 
 
