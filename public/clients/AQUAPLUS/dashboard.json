@@ -1,0 +1,56 @@
+
+{
+    "title": "Dashboard de Produção - Mota TV",
+    "switchIntervalMs": 30000,
+    "refreshIntervalMs": 300000,
+    "screensOrder": [
+        "summary",
+        "Serra",
+        "rebaixo 2",
+        "rebaixo 3",
+        "extrusora",
+        "rebaixo 1"
+    ],
+    "columns": {
+        "date": "data",
+        "pieces": "Peças Fabric.",
+        "running": "Funcionando",
+        "stopped": "Parado",
+        "utilization": "utilização de Maquina",
+        "tcMedio": "TC MEDIO",
+        "targetUtilization": "maximo"
+    },
+    "sectors": [
+        {
+            "id": "Serra",
+            "name": "Serra",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbx8iBmY7pSMPsZa5lSff0EYKhN_YbPXmJl_g3RiI9OAeP6hdzGPZFWzhUWVNNjjMAUnXA/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "rebaixo 2",
+            "name": "rebaixo 2",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbxskJTqAQ5A20k4eCJmwmC5Stsdu2loORr4a5JFc2U-g3_E7d3Hbv2ImV8DjD58xWjBHA/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "rebaixo 3",
+            "name": "rebaixo 3",
+            "apiUrl": "https://script.google.com/macros/s/AKfycby4tsUv6dRUtYLyUwf_uDY4HMLHchNGM9QtzTDqoxpsLC74KrTeJVOVTAqpgY-S3wkqBg/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "extrusora",
+            "name": "extrusora",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbxJ7tbJrmlVHcTuKcSuQ0IwBJ3Blkd-B0ZQZo-i98RwQ8l0YGCuIqOhVjiPsVVnudKd/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "rebaixo 1",
+            "name": "rebaixo 1",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbxk4P0iTd3jCST90Uf2Imb74byacqr7SsFIUMfSTUrd3erRPFivAag5Dn3JErsJuMv8/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        }
+      
+    ]
+}
