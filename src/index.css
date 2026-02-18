@@ -23,3 +23,20 @@ body {
 .mota-fade-in {
   animation: motaFadeIn 320ms ease-out both;
 }
+
+.mota-title-mobile-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .mota-title-mobile-clamp {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow: visible;
+  }
+}

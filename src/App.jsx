@@ -78,11 +78,26 @@ export default function App() {
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [screenStartedAt, setScreenStartedAt] = useState(() => Date.now());
   const [screenProgress, setScreenProgress] = useState(1);
+  const [isMobileView, setIsMobileView] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 1023px)").matches;
+  });
   const hasLoadedOnceRef = useRef(false);
 
   useEffect(() => {
     const timer = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const media = window.matchMedia("(max-width: 1023px)");
+    const onChange = (event) => {
+      setIsMobileView(event.matches);
+    };
+    setIsMobileView(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
   }, []);
 
   useEffect(() => {
@@ -162,6 +177,7 @@ export default function App() {
   useEffect(() => {
     if (!dashboardConfig) return;
     if (loading) return;
+    if (isMobileView) return;
     if (!effectiveScreensOrder.length) return;
     const timer = setInterval(() => {
       setScreenStartedAt(Date.now());
@@ -169,7 +185,7 @@ export default function App() {
       setScreenIndex((i) => (i + 1) % effectiveScreensOrder.length);
     }, switchIntervalMs);
     return () => clearInterval(timer);
-  }, [dashboardConfig, effectiveScreensOrder.length, loading, switchIntervalMs]);
+  }, [dashboardConfig, effectiveScreensOrder.length, isMobileView, loading, switchIntervalMs]);
 
   const goNextScreen = useCallback(() => {
     if (loading) return;
@@ -193,6 +209,10 @@ export default function App() {
 
   useEffect(() => {
     if (loading) return;
+    if (isMobileView) {
+      setScreenProgress(1);
+      return;
+    }
     const tick = () => {
       const elapsed = Date.now() - screenStartedAt;
       const remaining = Math.max(0, switchIntervalMs - elapsed);
@@ -204,7 +224,7 @@ export default function App() {
       clearTimeout(initial);
       clearInterval(timer);
     };
-  }, [loading, screenStartedAt, switchIntervalMs]);
+  }, [isMobileView, loading, screenStartedAt, switchIntervalMs]);
 
   const activeSector = useMemo(() => sectors.find((s) => s.id === activeScreenId), [activeScreenId, sectors]);
 
@@ -248,15 +268,16 @@ export default function App() {
       onPrevScreen={goPrevScreen}
       onNextScreen={goNextScreen}
       progress={loading ? 1 : screenProgress}
+      showScreenTimer={!isMobileView}
       footer={
         lastRefreshAt
           ? `Sincronizado com Google Sheets • Última atualização: ${lastRefreshAt.toLocaleTimeString("pt-BR")}`
           : "Sincronizando com Google Sheets..."
       }
     >
-      <div key={activeScreenId} className="absolute inset-0 mota-fade-in">
+      <div key={activeScreenId} className="h-full overflow-y-auto lg:absolute lg:inset-0 mota-fade-in">
         {activeScreenId === "summary" ? (
-          <SummaryScreen summary={summary} title={title} />
+          <SummaryScreen summary={summary} isMobileView={isMobileView} />
         ) : activeSector ? (
           sectorState[activeSector.id]?.hasError ? (
             <div className="p-6">
@@ -268,7 +289,10 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <SectorChartsScreen series={sectorState[activeSector.id]?.series || []} />
+            <SectorChartsScreen
+              series={sectorState[activeSector.id]?.series || []}
+              isMobileView={isMobileView}
+            />
           )
         ) : null}
       </div>

@@ -28,16 +28,18 @@ function formatPercent(value) {
   return `${Math.round(value * 10) / 10}%`;
 }
 
-function Card({ title, children }) {
+function Card({ title, children, className = "" }) {
   return (
-    <div className="bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-0">
+    <div
+      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-[220px] lg:min-h-0 ${className}`}
+    >
       <div className="text-slate-100 font-bold text-center mb-2">{title}</div>
       <div className="grow min-h-0">{children}</div>
     </div>
   );
 }
 
-export default function SummaryScreen({ summary, title }) {
+export default function SummaryScreen({ summary, isMobileView = false }) {
   const hoursData = useMemo(() => {
     const running = summary?.totals?.runningHours || 0;
     const stopped = summary?.totals?.stoppedHours || 0;
@@ -66,8 +68,8 @@ export default function SummaryScreen({ summary, title }) {
   const targetPercent = summary?.targetUtilizationPercent;
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 bg-mota-dark h-full min-h-0">
-      <Card title="Visão Geral (Hoje)">
+    <div className="p-3 lg:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 bg-mota-dark h-full min-h-0">
+      <Card title="Visão Geral (Hoje)" className="sm:col-span-2 lg:col-span-1 min-h-[180px]">
         <div className="h-full flex flex-col items-center justify-center text-center">
           <div className="text-sky-400 text-4xl font-black">
             {formatPieces(summary?.totals?.pieces)} peças
@@ -77,7 +79,7 @@ export default function SummaryScreen({ summary, title }) {
         </div>
       </Card>
 
-      <Card title="Distribuição de horas">
+      <Card title="Distribuição de horas" className="min-h-[260px]">
         <div className="w-full h-full min-h-0 relative">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -110,44 +112,50 @@ export default function SummaryScreen({ summary, title }) {
         </div>
       </Card>
 
-      <Card title="Utilização atual (geral)">
+      <Card title="Utilização atual (geral)" className="min-h-[260px]">
         <div className="w-full h-full min-h-0 flex items-center justify-center">
           <SemiGauge valuePercent={utilizationPercent} targetPercent={targetPercent} />
         </div>
       </Card>
 
-      <Card title="Peças por setor">
+      <Card title="Peças por setor" className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}>
         <MiniBar
           data={perSectorBars}
           dataKey="pieces"
           color="#3b82f6"
           formatter={(v) => formatPieces(v)}
+          isMobileView={isMobileView}
         />
       </Card>
 
-      <Card title="Utilização média por setor">
+      <Card
+        title="Utilização média por setor"
+        className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}
+      >
         <MiniBar
           data={perSectorBars}
           dataKey="utilization"
           color="#22c55e"
           formatter={(v) => formatPercent(v)}
           domain={[0, 100]}
+          isMobileView={isMobileView}
         />
       </Card>
 
-      <Card title="TC médio por setor (min/peça)">
+      <Card title="TC médio por setor (min/peça)" className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}>
         <MiniBar
           data={perSectorBars}
           dataKey="tc"
           color="#f59e0b"
           formatter={(v) => (Number.isFinite(v) ? `${Math.round(v * 10) / 10}` : "-")}
+          isMobileView={isMobileView}
         />
       </Card>
     </div>
   );
 }
 
-function MiniBar({ data, dataKey, color, formatter, domain }) {
+function MiniBar({ data, dataKey, color, formatter, domain, isMobileView = false }) {
   const rows = Array.isArray(data) ? data : [];
   const renderValueLabel = ({ x, y, width, height, value }) => {
     const label = formatter ? formatter(value) : value;
@@ -172,7 +180,11 @@ function MiniBar({ data, dataKey, color, formatter, domain }) {
   return (
     <div className="w-full h-full min-h-0">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows} layout="vertical" margin={{ left: 28, right: 16, top: 6, bottom: 6 }}>
+        <BarChart
+          data={rows}
+          layout="vertical"
+          margin={{ left: isMobileView ? 8 : 28, right: 16, top: 6, bottom: 6 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
           <XAxis
             type="number"
@@ -185,8 +197,8 @@ function MiniBar({ data, dataKey, color, formatter, domain }) {
             type="category"
             dataKey="name"
             stroke="#cbd5e1"
-            fontSize={11}
-            width={70}
+            fontSize={isMobileView ? 10 : 11}
+            width={isMobileView ? 52 : 70}
           />
           <Tooltip
             formatter={(v) => [formatter(v), dataKey]}

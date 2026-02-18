@@ -12,9 +12,11 @@ import {
   YAxis,
 } from "recharts";
 
-function Card({ title, children }) {
+function Card({ title, children, className = "" }) {
   return (
-    <div className="bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-0">
+    <div
+      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-[260px] lg:min-h-0 ${className}`}
+    >
       <div className="text-slate-300 text-sm font-black uppercase tracking-wide text-center mb-3">
         {title}
       </div>
@@ -29,23 +31,23 @@ const tooltipStyle = {
   borderRadius: 8,
 };
 
-export default function SectorChartsScreen({ series }) {
+export default function SectorChartsScreen({ series, isMobileView = false }) {
   const data = Array.isArray(series) ? series : [];
-  const xAxisInterval = 1;
+  const xAxisInterval = isMobileView ? 2 : 1;
 
   const xAxisProps = {
     dataKey: "label",
     stroke: "#64748b",
     fontSize: 10,
     interval: xAxisInterval,
-    tick: { angle: -30, textAnchor: "end" },
-    height: 32,
-    minTickGap: 12,
+    tick: { angle: isMobileView ? -40 : -30, textAnchor: "end" },
+    height: isMobileView ? 40 : 32,
+    minTickGap: isMobileView ? 8 : 12,
   };
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-2 lg:auto-rows-[1fr] gap-4 bg-mota-dark h-full min-h-0">
-      <Card title="Utilização de Máquina (%)">
+    <div className="p-3 lg:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 lg:gap-4 bg-mota-dark h-full min-h-0">
+      <Card title="Utilização de Máquina (%)" className={isMobileView ? "sm:col-span-2" : ""}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
@@ -91,7 +93,7 @@ export default function SectorChartsScreen({ series }) {
         </ResponsiveContainer>
       </Card>
 
-      <Card title="TC Médio (min/peça)">
+      <Card title="TC Médio (min/peça)" className={isMobileView ? "sm:col-span-2" : ""}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
