@@ -4,7 +4,7 @@
     "refreshIntervalMs": 300000,
     "screensOrder": [
         "summary",
-        "view1"
+        "Sensor teste casa"
     ],
     "columns": {
         "date": "data",
@@ -17,9 +17,9 @@
     },
     "sectors": [
         {
-            "id": "view1",
-            "name": "View1",
-            "apiUrl": "https://script.google.com/macros/s/AKfycbzCM0OW9g_jtBQsxkx5ISGzOG_6M-m9t6K6SgjF4HW6rv6la1hByHKXEi05UoMJDFVm/exec",
+            "id": "Sensor teste casa",
+            "name": "Sensor teste casa",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbyydEvBvB7evBnjtCebrETSImAZQ7Hv9sNw7NyrvxWvLO8c-4EOQCoyQmvBi20P_uiz/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
     ]
