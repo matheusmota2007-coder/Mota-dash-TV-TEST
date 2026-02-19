@@ -11,6 +11,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  usePlotArea,
 } from "recharts";
 
 function formatPieces(value) {
@@ -31,7 +32,7 @@ function formatPercent(value) {
 function Card({ title, children, className = "" }) {
   return (
     <div
-      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-[220px] lg:min-h-0 ${className}`}
+      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-55 lg:min-h-0 ${className}`}
     >
       <div className="text-slate-100 font-bold text-center mb-2">{title}</div>
       <div className="grow min-h-0">{children}</div>
@@ -66,10 +67,16 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
 
   const utilizationPercent = summary?.utilizationPercent;
   const targetPercent = summary?.targetUtilizationPercent;
+  const maxReferencePercent = Number.isFinite(summary?.targetUtilizationPercent)
+    ? summary.targetUtilizationPercent
+    : 85;
+  const minReferencePercent = Number.isFinite(summary?.minUtilizationPercent)
+    ? summary.minUtilizationPercent
+    : 60;
 
   return (
     <div className="p-3 lg:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 bg-mota-dark h-full min-h-0">
-      <Card title="Visão Geral (Hoje)" className="sm:col-span-2 lg:col-span-1 min-h-[180px]">
+      <Card title="Visão Geral (Hoje)" className="sm:col-span-2 lg:col-span-1 min-h-45">
         <div className="h-full flex flex-col items-center justify-center text-center">
           <div className="text-sky-400 text-4xl font-black">
             {formatPieces(summary?.totals?.pieces)} peças
@@ -79,7 +86,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
         </div>
       </Card>
 
-      <Card title="Distribuição de horas" className="min-h-[260px]">
+      <Card title="Distribuição de horas" className="min-h-65">
         <div className="w-full h-full min-h-0 relative">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -112,13 +119,13 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
         </div>
       </Card>
 
-      <Card title="Utilização atual (geral)" className="min-h-[260px]">
+      <Card title="Utilização atual (geral)" className="min-h-65">
         <div className="w-full h-full min-h-0 flex items-center justify-center">
           <SemiGauge valuePercent={utilizationPercent} targetPercent={targetPercent} />
         </div>
       </Card>
 
-      <Card title="Peças por setor" className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}>
+      <Card title="Peças por setor" className={isMobileView ? "min-h-70 sm:col-span-2 lg:col-span-1" : ""}>
         <MiniBar
           data={perSectorBars}
           dataKey="pieces"
@@ -130,19 +137,31 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
 
       <Card
         title="Utilização média por setor"
-        className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}
+        className={isMobileView ? "min-h-70 sm:col-span-2 lg:col-span-1" : ""}
       >
         <MiniBar
           data={perSectorBars}
           dataKey="utilization"
-          color="#22c55e"
+          color="rgba(74, 222, 128, 0.85)"
           formatter={(v) => formatPercent(v)}
           domain={[0, 100]}
+          referenceLines={[
+            {
+              value: minReferencePercent,
+              color: "rgba(248, 113, 113, 0.72)",
+              label: `Mínimo ${formatPercent(minReferencePercent)}`,
+            },
+            {
+              value: maxReferencePercent,
+              color: "rgba(74, 222, 128, 0.72)",
+              label: `Máximo ${formatPercent(maxReferencePercent)}`,
+            },
+          ]}
           isMobileView={isMobileView}
         />
       </Card>
 
-      <Card title="TC médio por setor (min/peça)" className={isMobileView ? "min-h-[280px] sm:col-span-2 lg:col-span-1" : ""}>
+      <Card title="TC médio por setor (min/peça)" className={isMobileView ? "min-h-70 sm:col-span-2 lg:col-span-1" : ""}>
         <MiniBar
           data={perSectorBars}
           dataKey="tc"
@@ -155,7 +174,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
   );
 }
 
-function MiniBar({ data, dataKey, color, formatter, domain, isMobileView = false }) {
+function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [], isMobileView = false }) {
   const rows = Array.isArray(data) ? data : [];
   const renderValueLabel = ({ x, y, width, height, value }) => {
     const label = formatter ? formatter(value) : value;
@@ -178,38 +197,105 @@ function MiniBar({ data, dataKey, color, formatter, domain, isMobileView = false
     );
   };
   return (
-    <div className="w-full h-full min-h-0">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={rows}
-          layout="vertical"
-          margin={{ left: isMobileView ? 8 : 28, right: 16, top: 6, bottom: 6 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
-          <XAxis
-            type="number"
-            stroke="#64748b"
-            fontSize={10}
-            domain={domain}
-            tickFormatter={formatter}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            stroke="#cbd5e1"
-            fontSize={isMobileView ? 10 : 11}
-            width={isMobileView ? 52 : 70}
-          />
-          <Tooltip
-            formatter={(v) => [formatter(v), dataKey]}
-            contentStyle={{ backgroundColor: "#0b1220", border: "1px solid #334155" }}
-          />
-          <Bar dataKey={dataKey} fill={color} radius={[6, 6, 6, 6]} isAnimationActive={false}>
-            <LabelList content={renderValueLabel} />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="w-full h-full min-h-0 flex flex-col">
+      <div className="min-h-0 grow">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={rows}
+            layout="vertical"
+            margin={{ left: isMobileView ? 8 : 28, right: 16, top: 6, bottom: 6 }}
+          >
+            <BackgroundReferenceLines
+              referenceLines={referenceLines}
+              domain={domain}
+              fallbackMax={Math.max(
+                1,
+                ...rows.map((row) => Number(row?.[dataKey]) || 0),
+                ...referenceLines.map((line) => Number(line?.value) || 0)
+              )}
+            />
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+            <XAxis
+              type="number"
+              stroke="#64748b"
+              fontSize={10}
+              domain={domain}
+              tickFormatter={formatter}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              stroke="#cbd5e1"
+              fontSize={isMobileView ? 10 : 11}
+              width={isMobileView ? 52 : 70}
+            />
+            <Tooltip
+              formatter={(v) => [formatter(v), dataKey]}
+              contentStyle={{ backgroundColor: "#0b1220", border: "1px solid #334155" }}
+            />
+            <Bar dataKey={dataKey} fill={color} radius={[6, 6, 6, 6]} isAnimationActive={false}>
+              <LabelList content={renderValueLabel} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {!referenceLines.length ? null : (
+        <div className="mt-1 flex flex-wrap items-center justify-end gap-3 text-[11px]">
+          {referenceLines.map((line) => (
+            <div key={`legend-${line.label}-${line.value}`} className="inline-flex items-center gap-1.5 text-slate-300">
+              <span
+                className="inline-block w-5 border-t-2"
+                style={{ borderTopColor: line.color, borderTopStyle: "dashed" }}
+              />
+              <span style={{ color: line.color }}>{line.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function BackgroundReferenceLines({ referenceLines, domain, fallbackMax }) {
+  const plotArea = usePlotArea();
+
+  if (!plotArea || !referenceLines.length) return null;
+
+  const minDomain = Array.isArray(domain) && Number.isFinite(domain[0]) ? Number(domain[0]) : 0;
+  const maxDomain = Array.isArray(domain) && Number.isFinite(domain[1]) ? Number(domain[1]) : fallbackMax;
+  const span = maxDomain - minDomain;
+
+  const toX = (rawValue) => {
+    const value = Number(rawValue);
+    if (!Number.isFinite(value)) return null;
+
+    if (!(span > 0)) return null;
+    const ratio = (value - minDomain) / span;
+    const scaled = plotArea.x + ratio * plotArea.width;
+    return Number.isFinite(scaled) ? scaled : null;
+  };
+
+  return (
+    <g aria-hidden="true">
+      {referenceLines.map((line) => {
+        const x = toX(line.value);
+        if (!Number.isFinite(x)) return null;
+        const clampedX = Math.max(plotArea.x, Math.min(plotArea.x + plotArea.width, x));
+        return (
+          <line
+            key={`bg-line-${line.label}-${line.value}`}
+            x1={clampedX}
+            y1={plotArea.y}
+            x2={clampedX}
+            y2={plotArea.y + plotArea.height}
+            stroke={line.color}
+            strokeWidth={2}
+            strokeDasharray="8 6"
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </g>
   );
 }
 

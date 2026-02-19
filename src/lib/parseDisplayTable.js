@@ -68,7 +68,10 @@ export function parseDisplayTableToSeries(json, columns) {
     const runningHours = parseHMS(obj[columns.running]);
     const stoppedHours = parseHMS(obj[columns.stopped]);
     const utilizationPercent = parsePercentPtBR(obj[columns.utilization]);
-    const targetUtilizationPercent = parsePercentPtBR(obj[columns.targetUtilization]);
+    const maxColumn = columns.maximumUtilization || columns.targetUtilization || "maximo";
+    const minColumn = columns.minimumUtilization || "minimo";
+    const targetUtilizationPercent = parsePercentPtBR(obj[maxColumn]);
+    const minUtilizationPercent = parsePercentPtBR(obj[minColumn]);
 
     let tcMedioMinPerPiece = parseDurationToMinutes(obj[columns.tcMedio]);
     if (tcMedioMinPerPiece === null && pieces > 0 && runningHours > 0) {
@@ -87,6 +90,7 @@ export function parseDisplayTableToSeries(json, columns) {
       targetUtilizationPercent: Number.isFinite(targetUtilizationPercent)
         ? targetUtilizationPercent
         : null,
+      minUtilizationPercent: Number.isFinite(minUtilizationPercent) ? minUtilizationPercent : null,
       tcMedioMinPerPiece,
     });
   }
@@ -108,4 +112,3 @@ export function pickTodayOrLatest(series, now = new Date()) {
   const todayRow = series.find((r) => isSameDay(r.date, today));
   return todayRow || series[0];
 }
-

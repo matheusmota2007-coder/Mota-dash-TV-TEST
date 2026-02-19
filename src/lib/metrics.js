@@ -13,6 +13,7 @@ export function computeSectorSnapshot(series, now = new Date()) {
       stoppedHours: 0,
       utilizationPercent: null,
       targetUtilizationPercent: null,
+      minUtilizationPercent: null,
       tcMedioMinPerPiece: null,
       dateStr: "",
     };
@@ -24,6 +25,7 @@ export function computeSectorSnapshot(series, now = new Date()) {
     stoppedHours: row.stoppedHours || 0,
     utilizationPercent: row.utilizationPercent,
     targetUtilizationPercent: row.targetUtilizationPercent,
+    minUtilizationPercent: row.minUtilizationPercent,
     tcMedioMinPerPiece: row.tcMedioMinPerPiece,
     dateStr: row.dateStr || "",
   };
@@ -68,11 +70,20 @@ export function computeSummary(sectorsData, now = new Date()) {
     acc.w += w;
     return acc;
   }, { sum: 0, w: 0 });
+  const weightedMin = perSector.reduce((acc, s) => {
+    if (!Number.isFinite(s.minUtilizationPercent)) return acc;
+    const w = s.totalHours || 0;
+    if (!w) return acc;
+    acc.sum += s.minUtilizationPercent * w;
+    acc.w += w;
+    return acc;
+  }, { sum: 0, w: 0 });
 
   const utilizationPercent =
     weightedUtil.w > 0 ? round1(weightedUtil.sum / weightedUtil.w) : null;
   const targetUtilizationPercent =
     weightedTarget.w > 0 ? round1(weightedTarget.sum / weightedTarget.w) : null;
+  const minUtilizationPercent = weightedMin.w > 0 ? round1(weightedMin.sum / weightedMin.w) : null;
 
   const tcAvg = perSector.reduce((acc, s) => {
     if (!Number.isFinite(s.tcMedioMinPerPiece)) return acc;
@@ -89,8 +100,8 @@ export function computeSummary(sectorsData, now = new Date()) {
     totals,
     utilizationPercent,
     targetUtilizationPercent,
+    minUtilizationPercent,
     tcMedioAvgMinPerPiece,
     dateStr,
   };
 }
-
