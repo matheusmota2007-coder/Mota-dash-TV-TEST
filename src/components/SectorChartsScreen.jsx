@@ -17,7 +17,7 @@ import { formatMinutesCompact } from "../lib/timeFormat";
 function Card({ title, children, className = "" }) {
   return (
     <div
-      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-[260px] lg:min-h-0 ${className}`}
+      className={`bg-mota-panel rounded-xl border border-slate-700/50 shadow-2xl p-4 flex flex-col min-h-65 lg:min-h-0 ${className}`}
     >
       <div className="text-slate-300 text-sm font-black uppercase tracking-wide text-center mb-3">
         {title}
