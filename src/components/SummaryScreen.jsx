@@ -13,6 +13,7 @@ import {
   YAxis,
   usePlotArea,
 } from "recharts";
+import { formatMinutesAsHMS } from "../lib/timeFormat";
 
 function formatPieces(value) {
   const n = Number(value) || 0;
@@ -161,12 +162,12 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
         />
       </Card>
 
-      <Card title="TC médio por setor (min/peça)" className={isMobileView ? "min-h-70 sm:col-span-2 lg:col-span-1" : ""}>
+      <Card title="TC médio por setor (HH:MM:SS/peça)" className={isMobileView ? "min-h-70 sm:col-span-2 lg:col-span-1" : ""}>
         <MiniBar
           data={perSectorBars}
           dataKey="tc"
           color="#f59e0b"
-          formatter={(v) => (Number.isFinite(v) ? `${Math.round(v * 10) / 10}` : "-")}
+          formatter={formatMinutesAsHMS}
           isMobileView={isMobileView}
         />
       </Card>

@@ -83,11 +83,13 @@ export default function App() {
     return window.matchMedia("(max-width: 1023px)").matches;
   });
   const hasLoadedOnceRef = useRef(false);
+  const loadInFlightRef = useRef(false);
 
   useEffect(() => {
+    if (loading) return undefined;
     const timer = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -108,58 +110,68 @@ export default function App() {
   }, [sectors]);
 
   const loadAll = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
+
     if (!sectors.length) {
       setLoading(false);
+      loadInFlightRef.current = false;
       return;
     }
-    const results = await Promise.allSettled(
-      sectors.map(async (sector) => {
-        const json = await fetchDisplayTable(sector);
-        if (json?.ok === false) {
-          throw new Error(json?.error || "server_error");
-        }
-        const series = parseDisplayTableToSeries(json, columns);
-        if (!series.length) throw new Error("Nenhum dado disponível");
-        return { sectorId: sector.id, series, rowCount: json?.rowCount ?? series.length };
-      })
-    );
 
-    setSectorState((prev) => {
-      const next = { ...prev };
-      for (let i = 0; i < results.length; i++) {
-        const r = results[i];
-        const sectorId = sectors[i]?.id;
-        if (!sectorId) continue;
+    try {
+      const now = new Date();
+      const results = await Promise.allSettled(
+        sectors.map(async (sector) => {
+          const json = await fetchDisplayTable(sector);
+          if (json?.ok === false) {
+            throw new Error(json?.error || "server_error");
+          }
+          const series = parseDisplayTableToSeries(json, columns);
+          if (!series.length) throw new Error("Nenhum dado disponível");
+          return { sectorId: sector.id, series, rowCount: json?.rowCount ?? series.length };
+        })
+      );
 
-        if (r.status === "fulfilled") {
-          const { series, rowCount } = r.value;
-          next[sectorId] = {
-            series,
-            rowCount,
-            hasError: false,
-            errorMsg: "",
-            updatedAt: new Date(),
-          };
-        } else {
-          const reason = r.reason;
-          next[sectorId] = {
-            ...next[sectorId],
-            hasError: true,
-            errorMsg: String(reason?.message || reason),
-            updatedAt: new Date(),
-          };
+      setSectorState((prev) => {
+        const next = { ...prev };
+        for (let i = 0; i < results.length; i++) {
+          const r = results[i];
+          const sectorId = sectors[i]?.id;
+          if (!sectorId) continue;
+
+          if (r.status === "fulfilled") {
+            const { series, rowCount } = r.value;
+            next[sectorId] = {
+              series,
+              rowCount,
+              hasError: false,
+              errorMsg: "",
+              updatedAt: now,
+            };
+          } else {
+            const reason = r.reason;
+            next[sectorId] = {
+              ...next[sectorId],
+              hasError: true,
+              errorMsg: String(reason?.message || reason),
+              updatedAt: now,
+            };
+          }
         }
+        return next;
+      });
+
+      setLastRefreshAt(new Date());
+      if (!hasLoadedOnceRef.current) {
+        hasLoadedOnceRef.current = true;
+        setScreenStartedAt(Date.now());
+        setScreenProgress(1);
       }
-      return next;
-    });
-
-    setLastRefreshAt(new Date());
-    if (!hasLoadedOnceRef.current) {
-      hasLoadedOnceRef.current = true;
-      setScreenStartedAt(Date.now());
-      setScreenProgress(1);
+      setLoading(false);
+    } finally {
+      loadInFlightRef.current = false;
     }
-    setLoading(false);
   }, [columns, sectors]);
 
   useEffect(() => {
@@ -228,10 +240,14 @@ export default function App() {
 
   const activeSector = useMemo(() => sectors.find((s) => s.id === activeScreenId), [activeScreenId, sectors]);
 
+  const summaryDateKey = `${clock.getFullYear()}-${clock.getMonth()}-${clock.getDate()}`;
+
   const summary = useMemo(() => {
+    const [year, month, day] = summaryDateKey.split("-").map(Number);
+    const summaryDate = new Date(year, month, day);
     const data = sectors.map((s) => ({ id: s.id, name: s.name, series: sectorState[s.id]?.series || [] }));
-    return computeSummary(data, clock);
-  }, [clock, sectorState, sectors]);
+    return computeSummary(data, summaryDate);
+  }, [sectorState, sectors, summaryDateKey]);
 
   const subtitle = useMemo(() => {
     const time = clock.toLocaleTimeString("pt-BR");
@@ -276,7 +292,7 @@ export default function App() {
       }
     >
       <div key={activeScreenId} className="h-full overflow-y-auto lg:absolute lg:inset-0 mota-fade-in">
-        {activeScreenId === "summary" ? (
+        {loading ? null : activeScreenId === "summary" ? (
           <SummaryScreen summary={summary} isMobileView={isMobileView} />
         ) : activeSector ? (
           sectorState[activeSector.id]?.hasError ? (
