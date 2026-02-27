@@ -16,6 +16,34 @@ function parsePercentPtBR(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function normalizeHeader(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, configuredColumn, fallbackColumns = []) {
+  if (configuredColumn) {
+    const direct = headerIndexMap.get(configuredColumn);
+    if (direct !== undefined) return direct;
+
+    const normalized = normalizedHeaderIndexMap.get(normalizeHeader(configuredColumn));
+    if (normalized !== undefined) return normalized;
+  }
+
+  for (const fallback of fallbackColumns) {
+    const direct = headerIndexMap.get(fallback);
+    if (direct !== undefined) return direct;
+
+    const normalized = normalizedHeaderIndexMap.get(normalizeHeader(fallback));
+    if (normalized !== undefined) return normalized;
+  }
+
+  return -1;
+}
+
 export function parseHMS(value) {
   try {
     if (!value) return 0;
@@ -29,6 +57,25 @@ export function parseHMS(value) {
   } catch {
     return 0;
   }
+}
+
+function parseHours(value) {
+  if (value === null || value === undefined) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  const hhmmss = /^(\d+):(\d{1,2})(?::(\d{1,2}))?$/.exec(raw);
+  if (hhmmss) {
+    const hours = Number(hhmmss[1]);
+    const minutes = Number(hhmmss[2]);
+    const seconds = hhmmss[3] ? Number(hhmmss[3]) : 0;
+    if (Number.isFinite(hours) && Number.isFinite(minutes) && Number.isFinite(seconds)) {
+      return Math.max(0, hours) + Math.min(Math.max(minutes, 0), 59) / 60 + Math.min(Math.max(seconds, 0), 59) / 3600;
+    }
+  }
+
+  const parsed = parseNumberPtBR(raw);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
 }
 
 function parseDatePtBR(value) {
@@ -78,18 +125,39 @@ export function parseDisplayTableToSeries(json, columns) {
   const headers = json?.headers || [];
   const rows = json?.rows || [];
   const headerIndexMap = new Map(headers.map((header, index) => [header, index]));
+  const normalizedHeaderIndexMap = new Map(
+    headers.map((header, index) => [normalizeHeader(header), index])
+  );
 
   const maxColumn = columns.maximumUtilization || columns.targetUtilization || "maximo";
   const minColumn = columns.minimumUtilization || "minimo";
 
-  const dateIndex = headerIndexMap.get(columns.date) ?? -1;
-  const piecesIndex = headerIndexMap.get(columns.pieces) ?? -1;
-  const runningIndex = headerIndexMap.get(columns.running) ?? -1;
-  const stoppedIndex = headerIndexMap.get(columns.stopped) ?? -1;
-  const utilizationIndex = headerIndexMap.get(columns.utilization) ?? -1;
-  const targetUtilizationIndex = headerIndexMap.get(maxColumn) ?? -1;
-  const minUtilizationIndex = headerIndexMap.get(minColumn) ?? -1;
-  const tcMedioIndex = headerIndexMap.get(columns.tcMedio) ?? -1;
+  const dateIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.date, ["data"]);
+  const piecesIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.pieces, ["pecas fabric."]);
+  const runningIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.running, ["funcionando"]);
+  const stoppedIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.stopped, ["parado"]);
+  const workingHoursIndex = getColumnIndex(
+    headerIndexMap,
+    normalizedHeaderIndexMap,
+    columns.workingHours || columns.workHours,
+    ["horas de trabalho", "hora de trabalho", "jornada", "jornada diaria", "carga horaria"]
+  );
+  const utilizationIndex = getColumnIndex(
+    headerIndexMap,
+    normalizedHeaderIndexMap,
+    columns.utilization
+  );
+  const targetUtilizationIndex = getColumnIndex(
+    headerIndexMap,
+    normalizedHeaderIndexMap,
+    maxColumn
+  );
+  const minUtilizationIndex = getColumnIndex(
+    headerIndexMap,
+    normalizedHeaderIndexMap,
+    minColumn
+  );
+  const tcMedioIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.tcMedio);
 
   const readCell = (row, index) => (index >= 0 && index < row.length ? row[index] : undefined);
   const result = [];
@@ -99,8 +167,15 @@ export function parseDisplayTableToSeries(json, columns) {
     const date = parseDatePtBR(dateStr);
 
     const pieces = parseNumberPtBR(readCell(row, piecesIndex)) ?? 0;
-    const runningHours = parseHMS(readCell(row, runningIndex));
-    const stoppedHours = parseHMS(readCell(row, stoppedIndex));
+    const runningHoursRaw = parseHours(readCell(row, runningIndex)) ?? 0;
+    const stoppedHoursFromSheet = parseHours(readCell(row, stoppedIndex));
+    const workingHours = parseHours(readCell(row, workingHoursIndex));
+    const runningHours = Number.isFinite(workingHours)
+      ? Math.min(Math.max(0, runningHoursRaw), workingHours)
+      : runningHoursRaw;
+    const stoppedHours = Number.isFinite(workingHours)
+      ? Math.max(0, workingHours - runningHours)
+      : (stoppedHoursFromSheet ?? 0);
     const utilizationPercent = parsePercentPtBR(readCell(row, utilizationIndex));
     const targetUtilizationPercent = parsePercentPtBR(readCell(row, targetUtilizationIndex));
     const minUtilizationPercent = parsePercentPtBR(readCell(row, minUtilizationIndex));
@@ -118,6 +193,7 @@ export function parseDisplayTableToSeries(json, columns) {
       pieces,
       runningHours,
       stoppedHours,
+      workingHours: Number.isFinite(workingHours) ? workingHours : null,
       utilizationPercent: Number.isFinite(utilizationPercent) ? utilizationPercent : null,
       targetUtilizationPercent: Number.isFinite(targetUtilizationPercent)
         ? targetUtilizationPercent

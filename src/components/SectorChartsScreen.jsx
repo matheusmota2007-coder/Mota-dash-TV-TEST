@@ -45,8 +45,7 @@ function formatPiecesValue(value) {
 
 function formatHoursValue(value) {
   if (!Number.isFinite(value)) return "-";
-  const rounded = Math.round(value * 10) / 10;
-  return `${rounded}h`;
+  return `${Math.round(value)}h`;
 }
 
 function shouldRenderValueLabel(value) {
@@ -102,6 +101,35 @@ function renderAngledBarLabel(formatter) {
   };
 }
 
+function renderInsideBarLabel(formatter) {
+  return ({ x, y, width, height, value }) => {
+    if (
+      !Number.isFinite(x) ||
+      !Number.isFinite(y) ||
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      !shouldRenderValueLabel(value) ||
+      height < 14
+    ) {
+      return null;
+    }
+    const text = formatter(value);
+    return (
+      <text
+        x={x + width / 2}
+        y={y + height / 2}
+        fill="#f8fafc"
+        fontSize={10}
+        fontWeight={700}
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        {text}
+      </text>
+    );
+  };
+}
+
 function SectorChartsScreen({ series, isMobileView = false }) {
   const data = useMemo(() => {
     if (!Array.isArray(series)) return [];
@@ -121,8 +149,8 @@ function SectorChartsScreen({ series, isMobileView = false }) {
     () => renderAngledBarLabel(formatPiecesValue),
     []
   );
-  const hoursLabelRenderer = useMemo(
-    () => renderAngledBarLabel(formatHoursValue),
+  const runningHoursLabelRenderer = useMemo(
+    () => renderInsideBarLabel(formatHoursValue),
     []
   );
   const tcLabelRenderer = useMemo(
@@ -184,7 +212,10 @@ function SectorChartsScreen({ series, isMobileView = false }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
             <XAxis {...xAxisProps} />
             <YAxis stroke="#64748b" fontSize={10} unit="h" />
-            <Tooltip contentStyle={tooltipStyle} />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(value, name) => [formatHoursValue(value), name]}
+            />
             <Legend />
             <Bar
               dataKey="runningHours"
@@ -193,7 +224,7 @@ function SectorChartsScreen({ series, isMobileView = false }) {
               name="Funcionando"
               isAnimationActive={false}
             >
-              {!shouldShowLabels ? null : <LabelList content={hoursLabelRenderer} />}
+              {!shouldShowLabels ? null : <LabelList content={runningHoursLabelRenderer} />}
             </Bar>
             <Bar
               dataKey="stoppedHours"
@@ -201,9 +232,7 @@ function SectorChartsScreen({ series, isMobileView = false }) {
               fill="#ef4444"
               name="Parado"
               isAnimationActive={false}
-            >
-              {!shouldShowLabels ? null : <LabelList content={hoursLabelRenderer} />}
-            </Bar>
+            />
           </BarChart>
         </ResponsiveContainer>
       </Card>

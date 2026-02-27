@@ -7,6 +7,15 @@ import { fetchDisplayTable } from "./services/sheetsApi";
 import { parseDisplayTableToSeries } from "./lib/parseDisplayTable";
 import { computeSummary } from "./lib/metrics";
 
+function nowMs() {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+const DEBUG_LOAD_TIMINGS = import.meta.env.VITE_DEBUG_LOAD_TIMINGS === "true";
+
 function createInitialSectorState(sectors) {
   const state = {};
   for (const sector of sectors) {
@@ -120,18 +129,48 @@ export default function App() {
     }
 
     try {
+      const loadStartedAt = nowMs();
       const now = new Date();
-      const results = await Promise.allSettled(
-        sectors.map(async (sector) => {
-          const json = await fetchDisplayTable(sector);
-          if (json?.ok === false) {
-            throw new Error(json?.error || "server_error");
-          }
-          const series = parseDisplayTableToSeries(json, columns);
-          if (!series.length) throw new Error("Nenhum dado disponível");
-          return { sectorId: sector.id, series, rowCount: json?.rowCount ?? series.length };
-        })
-      );
+      const requestByEndpoint = new Map();
+      const sectorPromises = sectors.map((sector) => {
+        const endpointKey = `${sector.apiUrl}::${sector.token}`;
+        let requestPromise = requestByEndpoint.get(endpointKey);
+        const sharedRequest = Boolean(requestPromise);
+
+        if (!requestPromise) {
+          requestPromise = (async () => {
+            const fetchStartedAt = nowMs();
+            const json = await fetchDisplayTable(sector);
+            const fetchMs = nowMs() - fetchStartedAt;
+
+            if (json?.ok === false) {
+              throw new Error(json?.error || "server_error");
+            }
+
+            const parseStartedAt = nowMs();
+            const series = parseDisplayTableToSeries(json, columns);
+            const parseMs = nowMs() - parseStartedAt;
+
+            if (!series.length) throw new Error("Nenhum dado disponível");
+
+            return {
+              series,
+              rowCount: json?.rowCount ?? series.length,
+              fetchMs,
+              parseMs,
+              totalMs: fetchMs + parseMs,
+            };
+          })();
+          requestByEndpoint.set(endpointKey, requestPromise);
+        }
+
+        return requestPromise.then((value) => ({
+          ...value,
+          sharedRequest,
+        }));
+      });
+
+      const results = await Promise.allSettled(sectorPromises);
 
       setSectorState((prev) => {
         const next = { ...prev };
@@ -161,6 +200,37 @@ export default function App() {
         }
         return next;
       });
+
+      if (DEBUG_LOAD_TIMINGS) {
+        const timingRows = results.map((r, i) => {
+          const sector = sectors[i];
+          if (r.status === "fulfilled") {
+            return {
+              sector: sector?.name || sector?.id || `#${i}`,
+              status: "ok",
+              totalMs: Math.round(r.value.totalMs),
+              fetchMs: Math.round(r.value.fetchMs),
+              parseMs: Math.round(r.value.parseMs),
+              sharedRequest: r.value.sharedRequest ? "yes" : "no",
+            };
+          }
+          return {
+            sector: sector?.name || sector?.id || `#${i}`,
+            status: "error",
+            totalMs: "",
+            fetchMs: "",
+            parseMs: "",
+            sharedRequest: "",
+          };
+        });
+        console.groupCollapsed(
+          `[Dashboard] loadAll ${Math.round(nowMs() - loadStartedAt)}ms (${new Date().toLocaleTimeString(
+            "pt-BR"
+          )})`
+        );
+        console.table(timingRows);
+        console.groupEnd();
+      }
 
       setLastRefreshAt(new Date());
       if (!hasLoadedOnceRef.current) {
