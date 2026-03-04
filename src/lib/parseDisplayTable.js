@@ -217,6 +217,25 @@ export function pickTodayOrLatest(series, now = new Date()) {
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate();
 
-  const todayRow = series.find((r) => isSameDay(r.date, today));
-  return todayRow || series[0];
+  let latestTodayIndex = -1;
+  for (let i = 0; i < series.length; i++) {
+    if (isSameDay(series[i]?.date, today)) {
+      latestTodayIndex = i;
+    }
+  }
+  if (latestTodayIndex >= 0) return series[latestTodayIndex];
+
+  let bestIndex = 0;
+  let bestTime = Number.NEGATIVE_INFINITY;
+  for (let i = 0; i < series.length; i++) {
+    const rowDate = series[i]?.date;
+    const time = rowDate instanceof Date ? rowDate.getTime() : Number.NaN;
+    if (!Number.isFinite(time)) continue;
+    if (time > bestTime || (time === bestTime && i > bestIndex)) {
+      bestTime = time;
+      bestIndex = i;
+    }
+  }
+
+  return series[bestIndex] || series[series.length - 1] || null;
 }

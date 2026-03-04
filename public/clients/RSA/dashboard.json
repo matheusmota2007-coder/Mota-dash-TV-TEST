@@ -1,12 +1,12 @@
 {
     "title": "Dashboard de Produção - Mota TV",
     "switchIntervalMs": 30000,
-    "refreshIntervalMs": 300000,
+    "refreshIntervalMs": 5000,
     "screensOrder": [
         "summary",
         "ESP 26 Prensa 1",
         "summary",
-        "ESP 12 PRENSA  02", 
+        "ESP 12 PRENSA  02",
         "summary",
         "ESP 23 prensa 5",
         "summary",
@@ -18,7 +18,7 @@
         "summary",
         "ESP_09_PRENSA 10",
         "summary",
-        "ESP_05_OVERLOCK",  
+        "ESP_05_OVERLOCK",
         "summary",
         "ESP 14 Overlock 1",
         "summary",
@@ -42,23 +42,16 @@
         "summary",
         "ESP 34 Overlock 11",
         "summary",
-        "ESP 05 Overlock 12",
-        "summary",
         "ESP 17 Galoneira 1",
         "summary",
-        "ESP 20 Galoneira 2",  
-        "summary",
-        "ESP 22 Overlock 3",
+        "ESP 20 Galoneira 2",
         "summary",
         "ESP 15 Galoneira 4",
         "summary",
         "ESP 28 Overlock xxx",
         "summary",
         "ESP_06_GALONEIRA AUTOMATICA"
-        
-        
-        
-            ],
+    ],
     "columns": {
         "date": "data",
         "pieces": "Peças Fabric.",
@@ -184,12 +177,6 @@
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "ESP 24 Overlock 7",
-            "name": "ESP 24 Overlock 7",
-            "apiUrl": "https://script.google.com/macros/s/AKfycbzLh7IqC8FWaVQeIt64dOyEJx7Yf3mkwEY9tssZZdlW2OuEu7wcZaffhu9oaDhecXR5/exec",
-            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
-        },
-        {
             "id": "ESP 27 Overlock 8",
             "name": "ESP 27 Overlock 8",
             "apiUrl": "https://script.google.com/macros/s/AKfycbwCkw2PJHeykQTdxtgfG3jJ97BQTY_CyHmz-xsw_Szywty6MvcvxTcVyWpqjptGq43pHQ/exec",
@@ -202,8 +189,8 @@
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "ESP  31 Overlock 10",
-            "name": "ESP  31 Overlock 10",
+            "id": "ESP 31 Overlock 10",
+            "name": "ESP 31 Overlock 10",
             "apiUrl": "https://script.google.com/macros/s/AKfycbw4lW4LFlJ21ilnmxSkXXNcrCYSjaEWp5kAvNwNPIzL1qy5z7FOJNlKUNsOHDU-bXQLJA/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
@@ -214,17 +201,10 @@
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "ESP 34 Overlock 11",
-            "name": "ESP 34 Overlock 11",
-            "apiUrl": "https://script.google.com/macros/s/AKfycbx3YngtiUOYm1-barwXd4pIdTpm3B6k6jkr_uDalilwTpo0ngnfX1sDO-QRm5ZuI6cP/exec",
-            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
-        },
-        {
             "id": "ESP 28 Overlock xxx",
             "name": "ESP 28 Overlock xxx",
             "apiUrl": "https://script.google.com/macros/s/AKfycbxrbXVCgVIYDXyv7MLSf6IhviOD_mVHBNSUeqlCfoyUZLrZsRNCXTkTpJxbBipov1H6/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
-
     ]
 }

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -30,6 +30,97 @@ function formatPercent(value) {
   return `${Math.round(value * 10) / 10}%`;
 }
 
+function splitLastDigit(formattedValue) {
+  const match = /^(.*?)(\d)$/.exec(String(formattedValue));
+  if (!match) {
+    return { prefix: String(formattedValue), digit: null };
+  }
+  return { prefix: match[1], digit: match[2] };
+}
+
+function AnimatedLastDigitPieces({ value }) {
+  const pieces = Math.max(0, Math.round(Number(value) || 0));
+  const [stableParts, setStableParts] = useState(() => splitLastDigit(formatPieces(pieces)));
+  const stablePartsRef = useRef(stableParts);
+  const prevPiecesRef = useRef(pieces);
+  const frameRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const [transition, setTransition] = useState(null);
+
+  useEffect(() => {
+    stablePartsRef.current = stableParts;
+  }, [stableParts]);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const nextParts = splitLastDigit(formatPieces(pieces));
+    const previousPieces = prevPiecesRef.current;
+    const previousParts = stablePartsRef.current;
+
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    if (pieces > previousPieces && previousParts.digit !== null && nextParts.digit !== null) {
+      setTransition({
+        prefix: nextParts.prefix,
+        fromDigit: previousParts.digit,
+        toDigit: nextParts.digit,
+        phase: "prepare",
+      });
+      frameRef.current = requestAnimationFrame(() => {
+        setTransition((current) => (current ? { ...current, phase: "run" } : null));
+      });
+      timeoutRef.current = setTimeout(() => {
+        setTransition(null);
+        setStableParts(nextParts);
+      }, 340);
+    } else {
+      setTransition(null);
+      setStableParts(nextParts);
+    }
+
+    prevPiecesRef.current = pieces;
+  }, [pieces]);
+
+  if (!transition) {
+    return (
+      <span className="inline-flex items-baseline tabular-nums">
+        <span>{stableParts.prefix}</span>
+        {stableParts.digit === null ? null : <span>{stableParts.digit}</span>}
+      </span>
+    );
+  }
+
+  const fromClass =
+    transition.phase === "run" ? "-translate-y-[1.15em] opacity-0" : "translate-y-0 opacity-100";
+  const toClass =
+    transition.phase === "run" ? "translate-y-0 opacity-100" : "translate-y-[1.15em] opacity-0";
+
+  return (
+    <span className="inline-flex items-baseline tabular-nums">
+      <span>{transition.prefix}</span>
+      <span className="relative inline-block h-[1.2em] w-[0.75em] overflow-hidden align-[-0.12em]">
+        <span
+          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out ${fromClass}`}
+        >
+          {transition.fromDigit}
+        </span>
+        <span
+          className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out ${toClass}`}
+        >
+          {transition.toDigit}
+        </span>
+      </span>
+    </span>
+  );
+}
+
 function Card({ title, children, className = "" }) {
   return (
     <div
@@ -42,6 +133,8 @@ function Card({ title, children, className = "" }) {
 }
 
 export default function SummaryScreen({ summary, isMobileView = false }) {
+  const pieces = Number(summary?.totals?.pieces) || 0;
+
   const hoursData = useMemo(() => {
     const running = summary?.totals?.runningHours || 0;
     const stopped = summary?.totals?.stoppedHours || 0;
@@ -80,7 +173,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
       <Card title="Visão Geral (Hoje)" className="sm:col-span-2 lg:col-span-1 min-h-45">
         <div className="h-full flex flex-col items-center justify-center text-center">
           <div className="text-sky-400 text-4xl font-black">
-            {formatPieces(summary?.totals?.pieces)} peças
+            <AnimatedLastDigitPieces value={pieces} /> peças
           </div>
           <div className="text-slate-300 mt-2">{formatHours(summary?.totals?.runningHours)} funcionando</div>
           <div className="text-slate-400">{formatHours(summary?.totals?.stoppedHours)} paradas</div>
@@ -176,7 +269,64 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
 }
 
 function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [], isMobileView = false }) {
-  const rows = Array.isArray(data) ? data : [];
+  const rows = useMemo(() => {
+    const rawRows = Array.isArray(data) ? data : [];
+    return [...rawRows]
+      .map((row) => ({
+        ...row,
+        name: String(row?.name ?? "")
+          .replace(/_/g, " ")
+          .replace(/\s+/g, " ")
+          .trim(),
+      }))
+      .sort((a, b) => {
+        const aValue = Number(a?.[dataKey]) || 0;
+        const bValue = Number(b?.[dataKey]) || 0;
+        return bValue - aValue;
+      });
+  }, [data, dataKey]);
+
+  const itemCount = rows.length;
+  const rowHeight = isMobileView
+    ? itemCount <= 6
+      ? 18
+      : itemCount <= 10
+        ? 20
+        : 24
+    : itemCount <= 6
+      ? 20
+      : itemCount <= 10
+        ? 24
+        : 28;
+  const minChartHeight = isMobileView ? 180 : 200;
+  const chartHeight = Math.max(minChartHeight, rows.length * rowHeight + 36);
+  const barCategoryGap = isMobileView
+    ? itemCount <= 6
+      ? "8%"
+      : "18%"
+    : itemCount <= 6
+      ? "10%"
+      : "22%";
+
+  const longestNameLength = useMemo(
+    () => rows.reduce((max, row) => Math.max(max, String(row?.name || "").length), 0),
+    [rows]
+  );
+  const yAxisWidth = isMobileView
+    ? Math.min(130, Math.max(90, longestNameLength * 5 + 20))
+    : Math.min(180, Math.max(120, longestNameLength * 6 + 20));
+
+  const longestValueLength = useMemo(
+    () =>
+      rows.reduce((max, row) => {
+        const value = Number(row?.[dataKey]) || 0;
+        const label = formatter ? String(formatter(value)) : String(value);
+        return Math.max(max, label.length);
+      }, 0),
+    [dataKey, formatter, rows]
+  );
+  const rightMargin = Math.min(120, Math.max(48, longestValueLength * 7 + 12));
+
   const renderValueLabel = ({ x, y, width, height, value }) => {
     const label = formatter ? formatter(value) : value;
     const safeX = Number.isFinite(x) ? x : 0;
@@ -199,12 +349,14 @@ function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [],
   };
   return (
     <div className="w-full h-full min-h-0 flex flex-col">
-      <div className="min-h-0 grow">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="min-h-0 grow overflow-y-auto pr-1">
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
             data={rows}
             layout="vertical"
-            margin={{ left: isMobileView ? 8 : 28, right: 16, top: 6, bottom: 6 }}
+            barSize={isMobileView ? 12 : 14}
+            barCategoryGap={barCategoryGap}
+            margin={{ left: isMobileView ? 8 : 12, right: rightMargin, top: 6, bottom: 6 }}
           >
             <BackgroundReferenceLines
               referenceLines={referenceLines}
@@ -227,8 +379,8 @@ function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [],
               type="category"
               dataKey="name"
               stroke="#cbd5e1"
-              fontSize={isMobileView ? 10 : 11}
-              width={isMobileView ? 52 : 70}
+              fontSize={isMobileView ? 10 : 12}
+              width={yAxisWidth}
             />
             <Tooltip
               formatter={(v) => [formatter(v), dataKey]}
