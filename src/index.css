@@ -32,6 +32,21 @@ body {
   overflow: hidden;
 }
 
+.mini-bar-chart--clickable .recharts-tooltip-cursor {
+  cursor: pointer;
+}
+
+.mini-bar-chart--clickable .recharts-bar-rectangle,
+.mini-bar-chart--clickable .recharts-bar-rectangle path,
+.mini-bar-chart--clickable .recharts-bar-rectangle rect {
+  pointer-events: none;
+}
+
+.mini-bar-chart :focus,
+.mini-bar-chart :focus-visible {
+  outline: none;
+}
+
 @media (min-width: 1024px) {
   .mota-title-mobile-clamp {
     display: block;

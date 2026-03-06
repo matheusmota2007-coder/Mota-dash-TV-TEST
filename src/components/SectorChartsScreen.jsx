@@ -136,6 +136,14 @@ function SectorChartsScreen({ series, isMobileView = false }) {
     const maxPoints = isMobileView ? 24 : 40;
     return series.length > maxPoints ? series.slice(0, maxPoints) : series;
   }, [isMobileView, series]);
+  const utilizationChartData = useMemo(
+    () =>
+      data.map((item) => ({
+        ...item,
+        utilizationPercent: item?.utilizationPercent === 0 ? null : item?.utilizationPercent,
+      })),
+    [data]
+  );
 
   const xAxisInterval = 1;
 
@@ -172,7 +180,7 @@ function SectorChartsScreen({ series, isMobileView = false }) {
     <div className="p-3 lg:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 lg:gap-4 bg-mota-dark h-full min-h-0">
       <Card title="Utilização de Máquina (%)" className={isMobileView ? "sm:col-span-2" : ""}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={utilizationChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
             <XAxis {...xAxisProps} />
             <YAxis stroke="#64748b" fontSize={10} unit="%" domain={[0, 100]} />

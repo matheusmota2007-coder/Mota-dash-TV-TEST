@@ -4,6 +4,7 @@ export default function AppLayout({
   title,
   subtitle,
   badge,
+  onGoSummaryScreen,
   children,
   footer,
   onPrevScreen,
@@ -18,15 +19,28 @@ export default function AppLayout({
           <h1 className="mota-title-mobile-clamp text-white text-[clamp(1rem,4.2vw,1.35rem)] lg:text-2xl font-black tracking-normal lg:tracking-widest uppercase lg:truncate">
             {title}
           </h1>
-          <div className="text-xs text-slate-400 mt-1 truncate">{subtitle}</div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
-            </span>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-tighter">
-              Monitoramento em tempo real
-            </p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs text-slate-400 truncate">{subtitle}</div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+                </span>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-tighter">
+                  Monitoramento em tempo real
+                </p>
+              </div>
+            </div>
+            {!onGoSummaryScreen ? null : (
+              <button
+                type="button"
+                onClick={onGoSummaryScreen}
+                className="shrink-0 lg:mr-[22%] scale-[0.85] inline-flex items-center justify-center bg-blue-600 text-white font-black italic uppercase tracking-wide px-4 py-1.5 rounded-lg border border-blue-400 shadow-[0_8px_24px_rgba(37,99,235,0.35)] hover:bg-blue-500 hover:shadow-[0_10px_28px_rgba(59,130,246,0.4)] active:translate-y-px transition-all duration-150"
+              >
+                Gerencial
+              </button>
+            )}
           </div>
         </div>
 

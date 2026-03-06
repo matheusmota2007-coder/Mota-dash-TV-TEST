@@ -68,15 +68,26 @@ export default function App() {
       Array.isArray(screensOrder) && screensOrder.length
         ? screensOrder
         : ["summary", ...sectors.map((s) => s.id)];
+    const ordered = [];
+    const seen = new Set();
 
-    const filtered = baseOrder.filter((id, idx) => {
-      if (id === "summary") return baseOrder.indexOf(id) === idx;
-      if (!sectorIds.has(id)) return false;
-      return baseOrder.indexOf(id) === idx;
-    });
+    for (const id of baseOrder) {
+      if (id !== "summary" && !sectorIds.has(id)) continue;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      ordered.push(id);
+    }
 
-    if (!filtered.length) return ["summary"];
-    return filtered;
+    // Fallback: always include every configured sector, even if screensOrder forgot one.
+    for (const sector of sectors) {
+      if (!seen.has(sector.id)) {
+        seen.add(sector.id);
+        ordered.push(sector.id);
+      }
+    }
+
+    if (!ordered.includes("summary")) ordered.unshift("summary");
+    return ordered.length ? ordered : ["summary"];
   }, [screensOrder, sectors]);
 
   const activeScreenId = effectiveScreensOrder[screenIndex] || effectiveScreensOrder[0];
@@ -283,6 +294,27 @@ export default function App() {
     setScreenIndex((i) => (i - 1 + effectiveScreensOrder.length) % effectiveScreensOrder.length);
   }, [effectiveScreensOrder.length, loading]);
 
+  const goToSectorScreen = useCallback(
+    (sectorId) => {
+      if (loading) return;
+      if (!sectorId) return;
+      const nextIndex = effectiveScreensOrder.indexOf(sectorId);
+      if (nextIndex < 0) return;
+      setScreenStartedAt(Date.now());
+      setScreenProgress(1);
+      setScreenIndex(nextIndex);
+    },
+    [effectiveScreensOrder, loading]
+  );
+
+  const goSummaryScreen = useCallback(() => {
+    if (loading) return;
+    const summaryIndex = effectiveScreensOrder.indexOf("summary");
+    setScreenStartedAt(Date.now());
+    setScreenProgress(1);
+    setScreenIndex(summaryIndex >= 0 ? summaryIndex : 0);
+  }, [effectiveScreensOrder, loading]);
+
   useEffect(() => {
     if (screenIndex >= effectiveScreensOrder.length) {
       setScreenIndex(0);
@@ -351,6 +383,7 @@ export default function App() {
       title={title}
       subtitle={subtitle}
       badge={badge}
+      onGoSummaryScreen={goSummaryScreen}
       onPrevScreen={goPrevScreen}
       onNextScreen={goNextScreen}
       progress={loading ? 1 : screenProgress}
@@ -363,7 +396,11 @@ export default function App() {
     >
       <div key={activeScreenId} className="h-full overflow-y-auto lg:absolute lg:inset-0 mota-fade-in">
         {loading ? null : activeScreenId === "summary" ? (
-          <SummaryScreen summary={summary} isMobileView={isMobileView} />
+          <SummaryScreen
+            summary={summary}
+            isMobileView={isMobileView}
+            onSelectSector={goToSectorScreen}
+          />
         ) : activeSector ? (
           sectorState[activeSector.id]?.hasError ? (
             <div className="p-6">

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -132,7 +132,7 @@ function Card({ title, children, className = "" }) {
   );
 }
 
-export default function SummaryScreen({ summary, isMobileView = false }) {
+export default function SummaryScreen({ summary, isMobileView = false, onSelectSector }) {
   const pieces = Number(summary?.totals?.pieces) || 0;
 
   const hoursData = useMemo(() => {
@@ -152,6 +152,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
   const perSectorBars = useMemo(() => {
     const rows = summary?.perSector || [];
     return rows.map((s) => ({
+      id: s.id,
       name: s.name,
       pieces: s.pieces || 0,
       utilization: Number.isFinite(s.utilizationPercent) ? s.utilizationPercent : 0,
@@ -226,6 +227,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
           color="#3b82f6"
           formatter={(v) => formatPieces(v)}
           isMobileView={isMobileView}
+          onRowClick={onSelectSector}
         />
       </Card>
 
@@ -252,6 +254,7 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
             },
           ]}
           isMobileView={isMobileView}
+          onRowClick={onSelectSector}
         />
       </Card>
 
@@ -262,13 +265,23 @@ export default function SummaryScreen({ summary, isMobileView = false }) {
           color="#f59e0b"
           formatter={formatMinutesAsHMS}
           isMobileView={isMobileView}
+          onRowClick={onSelectSector}
         />
       </Card>
     </div>
   );
 }
 
-function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [], isMobileView = false }) {
+function MiniBar({
+  data,
+  dataKey,
+  color,
+  formatter,
+  domain,
+  referenceLines = [],
+  isMobileView = false,
+  onRowClick,
+}) {
   const rows = useMemo(() => {
     const rawRows = Array.isArray(data) ? data : [];
     return [...rawRows]
@@ -327,6 +340,48 @@ function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [],
   );
   const rightMargin = Math.min(120, Math.max(48, longestValueLength * 7 + 12));
 
+  const onSectorClick = useCallback(
+    (sectorId) => {
+      if (!sectorId || typeof onRowClick !== "function") return;
+      onRowClick(sectorId);
+    },
+    [onRowClick]
+  );
+
+  const rowIdByName = useMemo(() => {
+    const map = new Map();
+    for (const row of rows) {
+      if (!row?.name) continue;
+      map.set(row.name, row.id);
+    }
+    return map;
+  }, [rows]);
+
+  const renderYAxisTick = useCallback(
+    ({ x, y, payload }) => {
+      const name = payload?.value;
+      const sectorId = rowIdByName.get(name);
+      const safeX = Number.isFinite(x) ? x : 0;
+      const safeY = Number.isFinite(y) ? y : 0;
+
+      return (
+        <g className={sectorId ? "cursor-pointer" : ""} onClick={() => onSectorClick(sectorId)}>
+          <text
+            x={safeX}
+            y={safeY}
+            dy={4}
+            fill="#cbd5e1"
+            fontSize={isMobileView ? 10 : 12}
+            textAnchor="end"
+          >
+            {name}
+          </text>
+        </g>
+      );
+    },
+    [isMobileView, onSectorClick, rowIdByName]
+  );
+
   const renderValueLabel = ({ x, y, width, height, value }) => {
     const label = formatter ? formatter(value) : value;
     const safeX = Number.isFinite(x) ? x : 0;
@@ -342,21 +397,35 @@ function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [],
         fontWeight={700}
         textAnchor="start"
         dominantBaseline="middle"
+        pointerEvents="none"
       >
         {label}
       </text>
     );
   };
+
+  const handleChartClick = useCallback(
+    (state) => {
+      const sectorId =
+        state?.activePayload?.[0]?.payload?.id ??
+        (state?.activeLabel ? rowIdByName.get(state.activeLabel) : undefined);
+      onSectorClick(sectorId);
+    },
+    [onSectorClick, rowIdByName]
+  );
+
   return (
     <div className="w-full h-full min-h-0 flex flex-col">
       <div className="min-h-0 grow overflow-y-auto pr-1">
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
+            className={typeof onRowClick === "function" ? "mini-bar-chart mini-bar-chart--clickable" : "mini-bar-chart"}
             data={rows}
             layout="vertical"
             barSize={isMobileView ? 12 : 14}
             barCategoryGap={barCategoryGap}
             margin={{ left: isMobileView ? 8 : 12, right: rightMargin, top: 6, bottom: 6 }}
+            onClick={handleChartClick}
           >
             <BackgroundReferenceLines
               referenceLines={referenceLines}
@@ -381,12 +450,24 @@ function MiniBar({ data, dataKey, color, formatter, domain, referenceLines = [],
               stroke="#cbd5e1"
               fontSize={isMobileView ? 10 : 12}
               width={yAxisWidth}
+              tick={renderYAxisTick}
             />
             <Tooltip
               formatter={(v) => [formatter(v), dataKey]}
               contentStyle={{ backgroundColor: "#0b1220", border: "1px solid #334155" }}
+              wrapperStyle={{ pointerEvents: "none" }}
+              cursor={{ fill: "rgba(148, 163, 184, 0.22)", stroke: "none" }}
             />
-            <Bar dataKey={dataKey} fill={color} radius={[6, 6, 6, 6]} isAnimationActive={false}>
+            <Bar
+              dataKey={dataKey}
+              fill={color}
+              radius={[6, 6, 6, 6]}
+              isAnimationActive={false}
+              activeBar={false}
+            >
+              {rows.map((row) => (
+                <Cell key={`cell-${row.id || row.name}`} />
+              ))}
               <LabelList content={renderValueLabel} />
             </Bar>
           </BarChart>
