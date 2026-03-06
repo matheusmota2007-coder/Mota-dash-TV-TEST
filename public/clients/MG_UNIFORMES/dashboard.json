@@ -28,6 +28,12 @@
             "name": "BORDADO",
             "apiUrl": "https://script.google.com/macros/s/AKfycbwTnkXg_4IVvI0ZdL88T-RFis2E7UrAQduHoQ6B4CSCFXRa74iVYagEAUjJu5uFSQAQ/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "es_36",
+            "name": "es_36",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbyvJv55v-5Qr0TYo3Z6puqrkq_kxfAThIcFMTUY0wuof_X3iWlMsuH-CT1eziPhzkV0/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
     ]
 }
