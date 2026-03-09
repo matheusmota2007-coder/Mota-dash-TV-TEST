@@ -4,12 +4,12 @@
     "refreshIntervalMs": 5000,
     "screensOrder": [
         "summary",
-        "prensa",
+        "Esp_38_prensa",
         "Esp_36_Enfestadeira",
         "Esp_29_Bolso",
         "Esp_01_Interlock",
         "Esp_39_travete",
-        "bordado"
+        "Esp_37_bordado"
     ],
     "columns": {
         "date": "data",
@@ -22,14 +22,14 @@
     },
     "sectors": [
         {
-            "id": "prensa",
-            "name": "PRENSA",
+            "id": "Esp_38_prensa",
+            "name": "Esp_38_prensa",
             "apiUrl": "https://script.google.com/macros/s/AKfycbyXnyKaSqswIEaUVK6Q81J0VKbWh1_vBJogyzvzd6bOmKjHd73032jRsUZdgFhaTccDgg/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "bordado",
-            "name": "BORDADO",
+            "id": "Esp_37_bordado",
+            "name": "Esp_37_bordado",
             "apiUrl": "https://script.google.com/macros/s/AKfycbwTnkXg_4IVvI0ZdL88T-RFis2E7UrAQduHoQ6B4CSCFXRa74iVYagEAUjJu5uFSQAQ/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
