@@ -6,6 +6,7 @@
         "summary",
         "prensa",
         "Esp_36_Enfestadeira",
+        "Esp_29_Bolso",
         "bordado"
     ],
     "columns": {
@@ -37,8 +38,8 @@
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "es_29",
-            "name": "es_29",
+            "id": "Esp_29_Bolso",
+            "name": "Esp_29_Bolso",
             "apiUrl": "https://script.google.com/macros/s/AKfycbzkl_r6c0unBPP1Vak1Hm6H6FIR3WhRZS21nfCGLiDlp67_MAglxSAEj0_fgcVy3tOJPg/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
