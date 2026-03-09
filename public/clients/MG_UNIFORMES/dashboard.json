@@ -5,6 +5,7 @@
     "screensOrder": [
         "summary",
         "prensa",
+        "Esp_36_Enfestadeira",
         "bordado"
     ],
     "columns": {
@@ -30,8 +31,8 @@
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
         {
-            "id": "es_36",
-            "name": "es_36",
+            "id": "Esp_36_Enfestadeira",
+            "name": "Esp_36_Enfestadeira",
             "apiUrl": "https://script.google.com/macros/s/AKfycbyvJv55v-5Qr0TYo3Z6puqrkq_kxfAThIcFMTUY0wuof_X3iWlMsuH-CT1eziPhzkV0/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         },
