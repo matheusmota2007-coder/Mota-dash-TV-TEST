@@ -8,6 +8,7 @@
         "Esp_36_Enfestadeira",
         "Esp_29_Bolso",
         "Esp_01_Interlock",
+        "Esp_39_travete",
         "bordado"
     ],
     "columns": {
@@ -49,6 +50,13 @@
             "name": "Esp_01_Interlock",
             "apiUrl": "https://script.google.com/macros/s/AKfycbxzdbzW3aklfsTimYZKOAk4Zb5GZ0u8xte_V82QvlaV-qt3ZUETTyV6vUahHWkYqaGMjA/exec",
             "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
+        },
+        {
+            "id": "Esp_39_travete",
+            "name": "Esp_39_travete",
+            "apiUrl": "https://script.google.com/macros/s/AKfycbzNxKTPVrUIVUvO7AMlP1H5qDQwLYrumBDGBDbczRNOhN8TI5fQDmv1IJAATnwJvdnW/exec",
+            "token": "90czL6LPhZ1gHHlaurPZ1xmHpxyOeBqwPYqQWa5Z9bOYddf1kc"
         }
+        
     ]
 }
