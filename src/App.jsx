@@ -30,6 +30,22 @@ function createInitialSectorState(sectors) {
   return state;
 }
 
+function parseYmdToLocalDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || "").trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function formatDatePtBr(value) {
+  const date = parseYmdToLocalDate(value);
+  if (!date) return "";
+  return date.toLocaleDateString("pt-BR");
+}
+
 export default function App() {
   const [dashboardConfig, setDashboardConfig] = useState(null);
   const [configError, setConfigError] = useState("");
@@ -55,7 +71,7 @@ export default function App() {
   }, []);
 
   const title = dashboardConfig?.title || "Dashboard";
-  const switchIntervalMs = dashboardConfig?.switchIntervalMs ?? 30_000;
+  const presentationIntervalMs = 30_000;
   const refreshIntervalMs = dashboardConfig?.refreshIntervalMs ?? 300_000;
   const screensOrder = dashboardConfig?.screensOrder || [];
   const sectors = dashboardConfig?.sectors || [];
@@ -98,6 +114,8 @@ export default function App() {
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [screenStartedAt, setScreenStartedAt] = useState(() => Date.now());
   const [screenProgress, setScreenProgress] = useState(1);
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [selectedSummaryDate, setSelectedSummaryDate] = useState("");
   const [isMobileView, setIsMobileView] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 1023px)").matches;
@@ -270,15 +288,15 @@ export default function App() {
   useEffect(() => {
     if (!dashboardConfig) return;
     if (loading) return;
-    if (isMobileView) return;
+    if (!isPresentationMode) return;
     if (!effectiveScreensOrder.length) return;
     const timer = setInterval(() => {
       setScreenStartedAt(Date.now());
       setScreenProgress(1);
       setScreenIndex((i) => (i + 1) % effectiveScreensOrder.length);
-    }, switchIntervalMs);
+    }, presentationIntervalMs);
     return () => clearInterval(timer);
-  }, [dashboardConfig, effectiveScreensOrder.length, isMobileView, loading, switchIntervalMs]);
+  }, [dashboardConfig, effectiveScreensOrder.length, isPresentationMode, loading, presentationIntervalMs]);
 
   const goNextScreen = useCallback(() => {
     if (loading) return;
@@ -315,6 +333,20 @@ export default function App() {
     setScreenIndex(summaryIndex >= 0 ? summaryIndex : 0);
   }, [effectiveScreensOrder, loading]);
 
+  const togglePresentationMode = useCallback(() => {
+    if (loading) return;
+    setIsPresentationMode((prev) => {
+      const next = !prev;
+      if (next) {
+        setScreenStartedAt(Date.now());
+        setScreenProgress(1);
+      } else {
+        setScreenProgress(1);
+      }
+      return next;
+    });
+  }, [loading]);
+
   useEffect(() => {
     if (screenIndex >= effectiveScreensOrder.length) {
       setScreenIndex(0);
@@ -323,14 +355,18 @@ export default function App() {
 
   useEffect(() => {
     if (loading) return;
+    if (!isPresentationMode) {
+      setScreenProgress(1);
+      return;
+    }
     if (isMobileView) {
       setScreenProgress(1);
       return;
     }
     const tick = () => {
       const elapsed = Date.now() - screenStartedAt;
-      const remaining = Math.max(0, switchIntervalMs - elapsed);
-      setScreenProgress(switchIntervalMs > 0 ? remaining / switchIntervalMs : 0);
+      const remaining = Math.max(0, presentationIntervalMs - elapsed);
+      setScreenProgress(presentationIntervalMs > 0 ? remaining / presentationIntervalMs : 0);
     };
     const initial = setTimeout(tick, 0);
     const timer = setInterval(tick, 100);
@@ -338,29 +374,35 @@ export default function App() {
       clearTimeout(initial);
       clearInterval(timer);
     };
-  }, [isMobileView, loading, screenStartedAt, switchIntervalMs]);
+  }, [isMobileView, isPresentationMode, loading, presentationIntervalMs, screenStartedAt]);
 
   const activeSector = useMemo(() => sectors.find((s) => s.id === activeScreenId), [activeScreenId, sectors]);
-
-  const summaryDateKey = `${clock.getFullYear()}-${clock.getMonth()}-${clock.getDate()}`;
+  const selectedSummaryDateObj = useMemo(() => parseYmdToLocalDate(selectedSummaryDate), [selectedSummaryDate]);
+  const summaryDateKey = selectedSummaryDateObj
+    ? `selected-${selectedSummaryDate}`
+    : `${clock.getFullYear()}-${clock.getMonth()}-${clock.getDate()}`;
+  const summaryPeriodLabel = selectedSummaryDateObj
+    ? formatDatePtBr(selectedSummaryDate)
+    : "Hoje";
 
   const summary = useMemo(() => {
-    const [year, month, day] = summaryDateKey.split("-").map(Number);
-    const summaryDate = new Date(year, month, day);
     const data = sectors.map((s) => ({ id: s.id, name: s.name, series: sectorState[s.id]?.series || [] }));
-    return computeSummary(data, summaryDate);
-  }, [sectorState, sectors, summaryDateKey]);
+    return computeSummary(data, clock, selectedSummaryDateObj);
+  }, [clock, sectorState, sectors, summaryDateKey, selectedSummaryDateObj]);
 
   const subtitle = useMemo(() => {
     const time = clock.toLocaleTimeString("pt-BR");
-    if (activeScreenId === "summary") return `GERENCIAL - resumo geral - ${time}`;
+    if (activeScreenId === "summary") {
+      const label = selectedSummaryDateObj ? formatDatePtBr(selectedSummaryDate) : "Hoje";
+      return `GERENCIAL - ${label} - ${time}`;
+    }
     if (!activeSector) return `Carregando... - ${time}`;
 
     const st = sectorState[activeSector.id];
     if (st?.hasError) return `${activeSector.name} - ❌ erro - ${time}`;
     if (st?.rowCount) return `${activeSector.name} - ✓ ${st.rowCount} registros - ${time}`;
     return `${activeSector.name} - carregando... - ${time}`;
-  }, [activeScreenId, activeSector, clock, sectorState]);
+  }, [activeScreenId, activeSector, clock, sectorState, selectedSummaryDate, selectedSummaryDateObj]);
 
   const badge = activeScreenId === "summary" ? "GERENCIAL" : activeSector?.name || "";
 
@@ -384,10 +426,17 @@ export default function App() {
       subtitle={subtitle}
       badge={badge}
       onGoSummaryScreen={goSummaryScreen}
+      onTogglePresentationMode={togglePresentationMode}
       onPrevScreen={goPrevScreen}
       onNextScreen={goNextScreen}
       progress={loading ? 1 : screenProgress}
-      showScreenTimer={!isMobileView}
+      showScreenTimer={!isMobileView && isPresentationMode}
+      isSummaryScreen={activeScreenId === "summary"}
+      isMobileView={isMobileView}
+      isPresentationMode={isPresentationMode}
+      showSummaryDatePicker={activeScreenId === "summary"}
+      summaryDateValue={selectedSummaryDate}
+      onSummaryDateChange={setSelectedSummaryDate}
       footer={
         lastRefreshAt
           ? `Sincronizado com Google Sheets • Última atualização: ${lastRefreshAt.toLocaleTimeString("pt-BR")}`
@@ -400,6 +449,7 @@ export default function App() {
             summary={summary}
             isMobileView={isMobileView}
             onSelectSector={goToSectorScreen}
+            summaryPeriodLabel={summaryPeriodLabel}
           />
         ) : activeSector ? (
           sectorState[activeSector.id]?.hasError ? (

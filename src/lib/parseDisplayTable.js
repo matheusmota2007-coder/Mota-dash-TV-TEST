@@ -210,12 +210,6 @@ export function pickTodayOrLatest(series, now = new Date()) {
   if (!Array.isArray(series) || series.length === 0) return null;
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const isSameDay = (d1, d2) =>
-    d1 &&
-    d2 &&
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate();
 
   let latestTodayIndex = -1;
   for (let i = 0; i < series.length; i++) {
@@ -238,4 +232,28 @@ export function pickTodayOrLatest(series, now = new Date()) {
   }
 
   return series[bestIndex] || series[series.length - 1] || null;
+}
+
+export function isSameDay(d1, d2) {
+  return (
+    d1 instanceof Date &&
+    d2 instanceof Date &&
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+}
+
+export function pickByDate(series, date) {
+  if (!Array.isArray(series) || series.length === 0) return null;
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+
+  let latestMatchIndex = -1;
+  for (let i = 0; i < series.length; i++) {
+    if (isSameDay(series[i]?.date, date)) {
+      latestMatchIndex = i;
+    }
+  }
+
+  return latestMatchIndex >= 0 ? series[latestMatchIndex] : null;
 }

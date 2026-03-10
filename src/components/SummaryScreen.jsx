@@ -132,7 +132,12 @@ function Card({ title, children, className = "" }) {
   );
 }
 
-export default function SummaryScreen({ summary, isMobileView = false, onSelectSector }) {
+export default function SummaryScreen({
+  summary,
+  isMobileView = false,
+  onSelectSector,
+  summaryPeriodLabel = "Hoje",
+}) {
   const pieces = Number(summary?.totals?.pieces) || 0;
 
   const hoursData = useMemo(() => {
@@ -171,7 +176,7 @@ export default function SummaryScreen({ summary, isMobileView = false, onSelectS
 
   return (
     <div className="p-3 lg:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 lg:auto-rows-[1fr] gap-3 bg-mota-dark h-full min-h-0">
-      <Card title="Visão Geral (Hoje)" className="sm:col-span-2 lg:col-span-1 min-h-45">
+      <Card title={`Visão Geral (${summaryPeriodLabel})`} className="sm:col-span-2 lg:col-span-1 min-h-45">
         <div className="h-full flex flex-col items-center justify-center text-center">
           <div className="text-sky-400 text-4xl font-black">
             <AnimatedLastDigitPieces value={pieces} /> peças

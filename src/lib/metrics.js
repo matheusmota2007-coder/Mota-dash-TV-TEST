@@ -1,11 +1,14 @@
-import { pickTodayOrLatest } from "./parseDisplayTable";
+import { pickByDate, pickTodayOrLatest } from "./parseDisplayTable";
 
 function round1(value) {
   return Math.round(value * 10) / 10;
 }
 
-export function computeSectorSnapshot(series, now = new Date()) {
-  const row = pickTodayOrLatest(series, now);
+export function computeSectorSnapshot(series, now = new Date(), selectedDate = null) {
+  const row =
+    selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime())
+      ? pickByDate(series, selectedDate)
+      : pickTodayOrLatest(series, now);
   if (!row) {
     return {
       pieces: 0,
@@ -31,9 +34,9 @@ export function computeSectorSnapshot(series, now = new Date()) {
   };
 }
 
-export function computeSummary(sectorsData, now = new Date()) {
+export function computeSummary(sectorsData, now = new Date(), selectedDate = null) {
   const perSector = sectorsData.map((s) => {
-    const snap = computeSectorSnapshot(s.series, now);
+    const snap = computeSectorSnapshot(s.series, now, selectedDate);
     return {
       id: s.id,
       name: s.name,
