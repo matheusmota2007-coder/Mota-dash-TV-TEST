@@ -121,6 +121,20 @@ function parseDurationToMinutes(value) {
   return Number.isFinite(decimalMinutes) && decimalMinutes > 0 ? decimalMinutes : null;
 }
 
+function normalizeMachineStatus(value) {
+  const raw = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (!raw) return null;
+  if (raw.includes("funcion")) return "Funcionando";
+  if (raw.includes("parad")) return "Parado";
+  if (raw.includes("deslig")) return "Desligado";
+  return null;
+}
+
 export function parseDisplayTableToSeries(json, columns) {
   const headers = json?.headers || [];
   const rows = json?.rows || [];
@@ -158,6 +172,13 @@ export function parseDisplayTableToSeries(json, columns) {
     minColumn
   );
   const tcMedioIndex = getColumnIndex(headerIndexMap, normalizedHeaderIndexMap, columns.tcMedio);
+  const machineStatusIndexByHeader = getColumnIndex(
+    headerIndexMap,
+    normalizedHeaderIndexMap,
+    columns.machineStatus || columns.statusMachine,
+    ["status maquina", "status da maquina", "status"]
+  );
+  const machineStatusIndex = machineStatusIndexByHeader >= 0 ? machineStatusIndexByHeader : 12;
 
   const readCell = (row, index) => (index >= 0 && index < row.length ? row[index] : undefined);
   const result = [];
@@ -179,6 +200,7 @@ export function parseDisplayTableToSeries(json, columns) {
     const utilizationPercent = parsePercentPtBR(readCell(row, utilizationIndex));
     const targetUtilizationPercent = parsePercentPtBR(readCell(row, targetUtilizationIndex));
     const minUtilizationPercent = parsePercentPtBR(readCell(row, minUtilizationIndex));
+    const machineStatus = normalizeMachineStatus(readCell(row, machineStatusIndex));
 
     let tcMedioMinPerPiece = parseDurationToMinutes(readCell(row, tcMedioIndex));
     if (tcMedioMinPerPiece === null && pieces > 0 && runningHours > 0) {
@@ -200,6 +222,7 @@ export function parseDisplayTableToSeries(json, columns) {
         : null,
       minUtilizationPercent: Number.isFinite(minUtilizationPercent) ? minUtilizationPercent : null,
       tcMedioMinPerPiece,
+      machineStatus,
     });
   }
 

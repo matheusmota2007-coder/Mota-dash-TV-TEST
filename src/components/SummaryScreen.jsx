@@ -376,7 +376,7 @@ function MiniBar({
             y={safeY}
             dy={4}
             fill="#cbd5e1"
-            fontSize={isMobileView ? 10 : 12}
+            fontSize={isMobileView ? 9 : 11}
             textAnchor="end"
           >
             {name}
@@ -398,7 +398,7 @@ function MiniBar({
         x={safeX + safeWidth + 8}
         y={safeY + safeHeight / 2}
         fill="#e2e8f0"
-        fontSize={12}
+        fontSize={11}
         fontWeight={700}
         textAnchor="start"
         dominantBaseline="middle"
@@ -453,9 +453,10 @@ function MiniBar({
               type="category"
               dataKey="name"
               stroke="#cbd5e1"
-              fontSize={isMobileView ? 10 : 12}
+              fontSize={isMobileView ? 9 : 11}
               width={yAxisWidth}
               tick={renderYAxisTick}
+              interval={0}
             />
             <Tooltip
               formatter={(v) => [formatter(v), dataKey]}

@@ -1,7 +1,4 @@
 {
-    "title": "Dashboard de Produção - Mota TV",
-    "switchIntervalMs": 30000,
-    "refreshIntervalMs": 5000,
     "screensOrder": [
         "summary",
         "COSTURA",

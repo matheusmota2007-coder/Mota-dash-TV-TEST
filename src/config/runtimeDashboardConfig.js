@@ -14,11 +14,8 @@ function getClientIdFromLocation() {
 function validateDashboardConfig(config) {
   const errors = [];
   if (!config || typeof config !== "object") errors.push("config inválida");
-  if (!config?.title || typeof config.title !== "string") errors.push("`title` obrigatório");
   if (!Array.isArray(config?.sectors)) errors.push("`sectors` deve ser um array");
   if (!config?.columns || typeof config.columns !== "object") errors.push("`columns` obrigatório");
-  if (typeof config?.switchIntervalMs !== "number") errors.push("`switchIntervalMs` deve ser number");
-  if (typeof config?.refreshIntervalMs !== "number") errors.push("`refreshIntervalMs` deve ser number");
   return errors;
 }
 
@@ -49,4 +46,3 @@ export async function loadDashboardConfig() {
 
   return { clientId, config: json };
 }
-

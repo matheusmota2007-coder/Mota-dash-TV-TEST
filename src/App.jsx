@@ -4,8 +4,12 @@ import SectorChartsScreen from "./components/SectorChartsScreen";
 import SummaryScreen from "./components/SummaryScreen";
 import { loadDashboardConfig } from "./config/runtimeDashboardConfig";
 import { fetchDisplayTable } from "./services/sheetsApi";
-import { parseDisplayTableToSeries } from "./lib/parseDisplayTable";
+import { parseDisplayTableToSeries, pickTodayOrLatest } from "./lib/parseDisplayTable";
 import { computeSummary } from "./lib/metrics";
+
+const SITE_TITLE = "Dashboard de Produção - Mota TV";
+const SWITCH_INTERVAL_MS = 30_000;
+const REFRESH_INTERVAL_MS = 5_000;
 
 function nowMs() {
   if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -70,9 +74,9 @@ export default function App() {
     };
   }, []);
 
-  const title = dashboardConfig?.title || "Dashboard";
-  const presentationIntervalMs = 30_000;
-  const refreshIntervalMs = dashboardConfig?.refreshIntervalMs ?? 300_000;
+  const title = SITE_TITLE;
+  const presentationIntervalMs = SWITCH_INTERVAL_MS;
+  const refreshIntervalMs = REFRESH_INTERVAL_MS;
   const screensOrder = dashboardConfig?.screensOrder || [];
   const sectors = dashboardConfig?.sectors || [];
   const columns = dashboardConfig?.columns || {};
@@ -405,6 +409,12 @@ export default function App() {
   }, [activeScreenId, activeSector, clock, sectorState, selectedSummaryDate, selectedSummaryDateObj]);
 
   const badge = activeScreenId === "summary" ? "GERENCIAL" : activeSector?.name || "";
+  const activeSectorMachineStatus = useMemo(() => {
+    if (activeScreenId === "summary" || !activeSector) return null;
+    const series = sectorState[activeSector.id]?.series || [];
+    const latestPoint = pickTodayOrLatest(series, clock);
+    return latestPoint?.machineStatus || null;
+  }, [activeScreenId, activeSector, clock, sectorState]);
 
   if (!dashboardConfig) {
     return (
@@ -437,6 +447,7 @@ export default function App() {
       showSummaryDatePicker={activeScreenId === "summary"}
       summaryDateValue={selectedSummaryDate}
       onSummaryDateChange={setSelectedSummaryDate}
+      machineStatus={activeSectorMachineStatus}
       footer={
         lastRefreshAt
           ? `Sincronizado com Google Sheets • Última atualização: ${lastRefreshAt.toLocaleTimeString("pt-BR")}`

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CalendarDays, Pause, Play } from "lucide-react";
+import motaLogoOfficial from "../assets/mota_logo_official.svg";
 
 function AutoFitSingleLine({ text, maxPx, minPx = 10, className = "" }) {
   const containerRef = useRef(null);
@@ -204,6 +205,40 @@ function SummaryCalendar({
   );
 }
 
+function getMachineStatusPresentation(status) {
+  if (status === "Funcionando") {
+    return {
+      label: "Online",
+      pingClassName: "bg-emerald-400",
+      dotClassName: "bg-emerald-500",
+      textClassName: "text-emerald-300",
+      borderClassName: "border-emerald-500/50",
+      bgClassName: "bg-emerald-500/10",
+    };
+  }
+  if (status === "Parado") {
+    return {
+      label: "Parado",
+      pingClassName: "bg-amber-300",
+      dotClassName: "bg-amber-400",
+      textClassName: "text-amber-200",
+      borderClassName: "border-amber-400/50",
+      bgClassName: "bg-amber-500/10",
+    };
+  }
+  if (status === "Desligado") {
+    return {
+      label: "Offline",
+      pingClassName: "bg-red-400",
+      dotClassName: "bg-red-500",
+      textClassName: "text-red-300",
+      borderClassName: "border-red-500/50",
+      bgClassName: "bg-red-500/10",
+    };
+  }
+  return null;
+}
+
 export default function AppLayout({
   title,
   subtitle,
@@ -222,6 +257,7 @@ export default function AppLayout({
   showSummaryDatePicker = false,
   summaryDateValue = "",
   onSummaryDateChange,
+  machineStatus = null,
 }) {
   const showMobileSummarySubtitle = !(isMobileView && isSummaryScreen);
   const hideSummaryBadgeOnMobile = isMobileView && isSummaryScreen;
@@ -237,6 +273,7 @@ export default function AppLayout({
   const statusRowClassName = isSummaryScreen
     ? `flex items-end gap-2 ${isMobileView ? "mt-0.5" : "-mt-px"}`
     : "flex items-end gap-2 mt-1";
+  const machineStatusPresentation = getMachineStatusPresentation(machineStatus);
 
   const toggleSummaryDatePicker = useCallback((event) => {
     if (!canOpenSummaryDatePicker) return;
@@ -279,10 +316,17 @@ export default function AppLayout({
     <div className="h-screen min-h-screen bg-mota-dark text-slate-200 overflow-hidden flex flex-col">
       <header className="sticky top-0 bg-mota-panel border-b-2 border-blue-500 p-3 lg:p-4 flex flex-col gap-3 lg:flex-row lg:justify-between lg:items-center shadow-2xl z-30">
         <div className="min-w-0">
-          <h1 className="mota-title-mobile-clamp text-white text-[clamp(0.8rem,3.4vw,1.08rem)] lg:text-2xl font-black tracking-normal lg:tracking-widest uppercase lg:truncate">
-            {title}
-          </h1>
-          <div className="mt-1 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <img
+              src={motaLogoOfficial}
+              alt="Mota TV"
+              className="h-7 w-auto shrink-0 lg:h-9"
+            />
+            <h1 className="mota-title-mobile-clamp min-w-0 text-white text-[clamp(0.8rem,3.4vw,1.08rem)] lg:text-2xl font-black tracking-normal lg:tracking-widest uppercase lg:truncate">
+              {title}
+            </h1>
+          </div>
+          <div className="mt-1 flex items-center justify-start gap-3">
             <div className="min-w-0">
               {!showMobileSummarySubtitle ? null : (
                 <div className={subtitleClassName}>{subtitle}</div>
@@ -325,7 +369,7 @@ export default function AppLayout({
                 )}
               </div>
             </div>
-            <div className="hidden lg:flex shrink-0 lg:mr-[22%] scale-[0.85] items-center gap-2">
+            <div className="hidden lg:flex shrink-0 ml-2 scale-[0.85] items-center gap-2">
               {!onGoSummaryScreen || isSummaryScreen ? null : (
                 <button
                   type="button"
@@ -339,7 +383,7 @@ export default function AppLayout({
           </div>
         </div>
 
-        <div className="flex items-center justify-between lg:justify-end gap-3 shrink-0 w-full lg:w-auto">
+        <div className="flex items-start justify-between lg:items-start lg:justify-end gap-3 shrink-0 w-full lg:w-auto">
           {!onPrevScreen || !onNextScreen ? null : (
             <div className="flex items-center gap-2 w-full lg:w-auto">
               {!onTogglePresentationMode ? null : (
@@ -407,13 +451,32 @@ export default function AppLayout({
             </div>
           )}
           {!badge || hideSummaryBadgeOnMobile ? null : (
-            <div className="bg-blue-600 px-3 lg:px-4 py-2 rounded-lg shadow-lg border border-blue-400 w-44 lg:w-52 text-center">
-              <AutoFitSingleLine
-                text={badge}
-                maxPx={18}
-                minPx={9}
-                className="text-white font-black italic uppercase tracking-wide lg:tracking-widest"
-              />
+            <div className="flex flex-col items-end lg:items-center gap-1.5">
+              <div className="bg-blue-600 px-3 lg:px-4 py-2 rounded-lg shadow-lg border border-blue-400 w-44 lg:w-52 text-center">
+                <AutoFitSingleLine
+                  text={badge}
+                  maxPx={18}
+                  minPx={9}
+                  className="text-white font-black italic uppercase tracking-wide lg:tracking-widest"
+                />
+              </div>
+              {isSummaryScreen || !machineStatusPresentation ? null : (
+                <div
+                  className={`inline-flex items-center justify-end lg:justify-center gap-2 rounded-md border px-3 py-1 ${machineStatusPresentation.borderClassName} ${machineStatusPresentation.bgClassName}`}
+                >
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span
+                      className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${machineStatusPresentation.pingClassName}`}
+                    />
+                    <span
+                      className={`relative inline-flex rounded-full h-2.5 w-2.5 ${machineStatusPresentation.dotClassName}`}
+                    />
+                  </span>
+                  <span className={`text-xs font-bold uppercase tracking-wide ${machineStatusPresentation.textClassName}`}>
+                    {machineStatusPresentation.label}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
